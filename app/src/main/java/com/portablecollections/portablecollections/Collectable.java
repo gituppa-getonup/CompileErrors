@@ -2,17 +2,43 @@ package com.portablecollections.portablecollections;
 
 // POJO
 
-import java.io.Serializable;
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+import android.content.ContentValues;
 
+import java.io.Serializable;
+@Entity
 public class Collectable {
 
-    private int id;
-    private String name;
-    private String description;
-    private String country;
-    private String city;
+    @PrimaryKey
+    private static int id;
+    private static String name;
+    private static String description;
+    private static String country;
+    private static String city;
 
     public Collectable() {
+    }
+
+    public static Collectable fromContentValues(ContentValues contentValues) {
+        final Collectable collectable = new Collectable();
+        if(contentValues.containsKey(String.valueOf(id))) {
+            collectable.setId(contentValues.getAsInteger(String.valueOf(id)));
+        }
+        if(contentValues.containsKey(name)) {
+            collectable.setName(contentValues.getAsString(name));
+        }
+        if(contentValues.containsKey(description)) {
+            collectable.setDescription(contentValues.getAsString(description));
+        }
+        if(contentValues.containsKey(country)) {
+            collectable.setCountry(contentValues.getAsString(country));
+        }
+        if(contentValues.containsKey(city)) {
+            collectable.setCity(contentValues.getAsString(city));
+        }
+        return collectable;
     }
 
     public int getId() {

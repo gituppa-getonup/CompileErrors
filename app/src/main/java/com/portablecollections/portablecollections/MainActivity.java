@@ -1,5 +1,6 @@
 package com.portablecollections.portablecollections;
 
+import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getName();
+    private static CollectableDatabase collectableDatabase;
 
 
     @Override
@@ -18,6 +20,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
+        }
+
+
+
+
+
+        /*
         PlanDetailsSQLiteOpenHelper helper = new PlanDetailsSQLiteOpenHelper(this);
         SQLiteDatabase database = helper.getWritableDatabase();
         ArrayList<Collectable> collection = helper.retrieveData(database);
@@ -28,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("country: " + collectable.getCountry());
             System.out.println("city: " + collectable.getCity());
         }
+        */
+
 
     }
 }
