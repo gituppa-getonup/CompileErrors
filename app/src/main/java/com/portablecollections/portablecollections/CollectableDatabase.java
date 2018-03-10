@@ -16,7 +16,6 @@ public abstract class CollectableDatabase extends RoomDatabase {
         if(collectableDatabase == null) {
             collectableDatabase = Room.databaseBuilder(context.getApplicationContext(), CollectableDatabase.class, "collectables")
                     .build();
-            collectableDatabase.insertTestData();
 
         }
         return collectableDatabase;

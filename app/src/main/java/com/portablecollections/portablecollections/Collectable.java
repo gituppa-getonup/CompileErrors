@@ -8,15 +8,16 @@ import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
 
 import java.io.Serializable;
-@Entity
+@Entity(tableName = "collectables")
 public class Collectable {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    public static int id;
 
-    @PrimaryKey
-    private static int id;
-    private static String name;
-    private static String description;
-    private static String country;
-    private static String city;
+    public static String name;
+    public static String description;
+    public static String country;
+    public static String city;
 
     public Collectable() {
     }

@@ -20,8 +20,9 @@ public class CollectableProvider extends ContentProvider {
     public static final Uri URI_COLLECTABLES = Uri.parse(
             "content://" + AUTHORITY + "/" + "collectables");
     private static final UriMatcher MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
+
     static {
-            MATCHER.addURI(AUTHORITY, "collectables", 1);
+        MATCHER.addURI(AUTHORITY, "collectables", 1);
     }
 
 
@@ -29,30 +30,26 @@ public class CollectableProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         final int code = MATCHER.match(uri);
-        if(code == 1) {
+        if (code == 1) {
             final Context context = getContext();
-            if(context == null) {
+            if (context == null) {
                 return null;
             }
             CollectableDao collectableDao = CollectableDatabase.getInstance(context).collectableDao();
             final Cursor cursor;
-            if(code == 1) {
+            if (code == 1) {
                 cursor = collectableDao.selectAll();
             } else {
-                Log.e(TAG, "code is not 1");
+                cursor = collectableDao.selectById(ContentUris.parseId(uri));
             }
             cursor.setNotificationUri(context.getContentResolver(), uri);
             return cursor;
-
 
 
         } else {
             Log.e(TAG, "unknown URI");
             throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-
-
-        return null;
     }
 
     @Nullable
@@ -60,11 +57,13 @@ public class CollectableProvider extends ContentProvider {
     public String getType(@NonNull Uri uri) {
         switch (MATCHER.match(uri)) {
             case 1:
-                return URI_COLLECTABLES;
+                return URI_COLLECTABLES.toString();
+
+            default:
+                Log.e(TAG, "getType illegal arguments");
+                throw new IllegalArgumentException("Unknown uri: " + uri);
         }
-        default:
-            Log.e(TAG, "getType illegal arguments");
-            throw new IllegalArgumentException("Unknown uri: " + uri);
+
     }
 
     @Override
@@ -76,7 +75,7 @@ public class CollectableProvider extends ContentProvider {
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
 
-        switch(MATCHER.match(uri)) {
+        switch (MATCHER.match(uri)) {
             case 1:
                 final Context context = getContext();
                 if (context == null) {
@@ -84,6 +83,7 @@ public class CollectableProvider extends ContentProvider {
                 }
                 final int id = CollectableDatabase.getInstance(context).collectableDao()
                         .insert(Collectable.fromContentValues(contentValues));
+
                 context.getContentResolver().notifyChange(uri, null);
                 return ContentUris.withAppendedId(uri, id);
             default:
@@ -94,10 +94,10 @@ public class CollectableProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String s, @Nullable String[] strings) {
-        switch(MATCHER.match(uri)) {
+        switch (MATCHER.match(uri)) {
             case 2:
                 final Context context = getContext();
-                if(context == null) {
+                if (context == null) {
                     return 0;
                 }
                 final int count = CollectableDatabase.getInstance(context).collectableDao()
@@ -113,14 +113,14 @@ public class CollectableProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String s, @Nullable String[] strings) {
-        switch(MATCHER.match(uri)) {
+        switch (MATCHER.match(uri)) {
             case 2:
                 final Context context = getContext();
-                if(context == null) {
+                if (context == null) {
                     return 0;
                 }
                 final Collectable collectable = Collectable.fromContentValues(contentValues);
-                collectable.setId(ContentUris.parseId());
+                collectable.setId(ContentUris.parseId(uri));
                 final int count = CollectableDatabase.getInstance(context).collectableDao()
                         .update(collectable);
                 context.getContentResolver().notifyChange(uri, null);

@@ -25,7 +25,7 @@ public interface CollectableDao {
      * @return the row ID of the inserted collectable.
      */
     @Insert
-    int insert(Collectable collectable);
+    long insert(Collectable collectable);
 
     /**
      * Inserts multiple collectables into the table
@@ -34,7 +34,7 @@ public interface CollectableDao {
      * @return the row ID's of the inserted collectables.
      */
     @Insert
-    int[] insertAll(Collectable[] collectables);
+    long[] insertAll(Collectable[] collectables);
 
     /**
      * Select all collectables.
@@ -43,6 +43,15 @@ public interface CollectableDao {
      */
     @Query("SELECT name, description, country, city FROM collectables")
     Cursor selectAll();
+
+    /**
+     * Selects a single collectable from the database
+     *
+     * @param id the id of the record that is to be retrieved.
+     * @return a {@link Cursor} of the collectable in the database.
+     */
+    @Query("SELECT name, description, country, city FROM collectables WHERE id = :id")
+    Cursor selectById(int id);
 
     /**
      * Deletes a single collectable from the database.
