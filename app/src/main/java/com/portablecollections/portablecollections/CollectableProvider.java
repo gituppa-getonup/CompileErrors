@@ -77,12 +77,16 @@ public class CollectableProvider extends ContentProvider {
 
         switch (MATCHER.match(uri)) {
             case 1:
-                final Context context = getContext();
+                Context context = getContext();
                 if (context == null) {
                     return null;
                 }
-                final int id = CollectableDatabase.getInstance(context).collectableDao()
-                        .insert(Collectable.fromContentValues(contentValues));
+
+                Collectable collectable = Collectable.fromContentValues(contentValues);
+
+
+                final long id = CollectableDatabase.getInstance(context).collectableDao()
+                        .insert(collectable);
 
                 context.getContentResolver().notifyChange(uri, null);
                 return ContentUris.withAppendedId(uri, id);

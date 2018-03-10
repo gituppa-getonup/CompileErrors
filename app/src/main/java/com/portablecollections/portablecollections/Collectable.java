@@ -12,41 +12,41 @@ import java.io.Serializable;
 public class Collectable {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    public static int id;
+    private long id;
 
-    public static String name;
-    public static String description;
-    public static String country;
-    public static String city;
+    private String name;
+    private String description;
+    private String country;
+    private String city;
 
     public Collectable() {
     }
 
     public static Collectable fromContentValues(ContentValues contentValues) {
-        final Collectable collectable = new Collectable();
-        if(contentValues.containsKey(String.valueOf(id))) {
-            collectable.setId(contentValues.getAsInteger(String.valueOf(id)));
+        Collectable collectable = new Collectable();
+        if(contentValues.containsKey("id")) {
+            collectable.setId(contentValues.getAsLong("id"));
         }
-        if(contentValues.containsKey(name)) {
-            collectable.setName(contentValues.getAsString(name));
+        if(contentValues.containsKey("name")) {
+            collectable.setName(contentValues.getAsString("name"));
         }
-        if(contentValues.containsKey(description)) {
-            collectable.setDescription(contentValues.getAsString(description));
+        if(contentValues.containsKey("description")) {
+            collectable.setDescription(contentValues.getAsString("description"));
         }
-        if(contentValues.containsKey(country)) {
-            collectable.setCountry(contentValues.getAsString(country));
+        if(contentValues.containsKey("country")) {
+            collectable.setCountry(contentValues.getAsString("country"));
         }
-        if(contentValues.containsKey(city)) {
-            collectable.setCity(contentValues.getAsString(city));
+        if(contentValues.containsKey("city")) {
+            collectable.setCity(contentValues.getAsString("city"));
         }
         return collectable;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

@@ -51,7 +51,7 @@ public interface CollectableDao {
      * @return a {@link Cursor} of the collectable in the database.
      */
     @Query("SELECT name, description, country, city FROM collectables WHERE id = :id")
-    Cursor selectById(int id);
+    Cursor selectById(long id);
 
     /**
      * Deletes a single collectable from the database.
@@ -60,7 +60,7 @@ public interface CollectableDao {
      * @return the number of collectables deleted. This should always be {@code 1}.
      */
     @Query("DELETE FROM collectables WHERE id = :id")
-    int deleteById(int id);
+    int deleteById(long id);
 
     /**
      * Update the collectable identified by the row ID.
