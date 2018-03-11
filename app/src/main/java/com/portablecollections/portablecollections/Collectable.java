@@ -7,7 +7,6 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
 
-import java.io.Serializable;
 @Entity(tableName = "collectables")
 public class Collectable {
     @PrimaryKey(autoGenerate = true)

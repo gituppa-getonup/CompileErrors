@@ -18,7 +18,7 @@ public class CollectableProvider extends ContentProvider {
     private static final String TAG = CollectableProvider.class.getName();
     public static final String AUTHORITY = CollectableProvider.class.getPackage().getName();
     public static final Uri URI_COLLECTABLES = Uri.parse(
-            "content://" + AUTHORITY + "/" + "collectables");
+            "content://" + AUTHORITY + "/collectables");
     private static final UriMatcher MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
