@@ -23,13 +23,7 @@ public abstract class CollectableDatabase extends RoomDatabase {
 
     private void insertTestData() {
         beginTransaction();
-        Collectable collectable = new Collectable();
-        collectable.setName("Name from code");
-        collectable.setDescription("Description from code");
-        collectable.setCountry("USA");
-        collectable.setCity("NYC");
 
-        collectableDao().insert(collectable);
         endTransaction();
     }
 }

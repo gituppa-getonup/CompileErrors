@@ -38,6 +38,17 @@ public class CollectableProvider extends ContentProvider {
             CollectableDao collectableDao = CollectableDatabase.getInstance(context).collectableDao();
             final Cursor cursor;
             if (code == 1) {
+
+                /*
+                Collectable collectable = new Collectable();
+                collectable.setName("Name from code");
+                collectable.setDescription("Description from code");
+                collectable.setCountry("USA");
+                collectable.setCity("NYC");
+
+                collectableDao.insert(collectable);
+                */
+
                 cursor = collectableDao.selectAll();
             } else {
                 cursor = collectableDao.selectById(ContentUris.parseId(uri));
@@ -83,7 +94,6 @@ public class CollectableProvider extends ContentProvider {
                 }
 
                 Collectable collectable = Collectable.fromContentValues(contentValues);
-
 
                 final long id = CollectableDatabase.getInstance(context).collectableDao()
                         .insert(collectable);
