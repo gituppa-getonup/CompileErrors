@@ -13,12 +13,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.File;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getName();
     private final static int LOADER_COLLECTABLES = 1;
     private final static int CAMERA_REQUEST = 1888;
     private CollectableAdapter mCollectableAdapter;
+    private CollectablePictureHelper pictureHelper;
 
 
     @Override
@@ -43,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
             }
         });
+
+        CollectablePictureHelper pictureHelper = new CollectablePictureHelper();
+
+        Intent takePictureIntent = pictureHelper.dispatchTakePictureIntent(getApplicationContext(), " blloo");
+        startActivityForResult(takePictureIntent, 1);
 
     }
 
