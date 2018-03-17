@@ -21,6 +21,11 @@
             android:authorities="com.portablecollections.portablecollections">
         </provider>
 
+
+
     </application>
+
+    <uses-feature android:name="android.hardware.camera2"
+        android:required="true" />
 
 </manifest>
