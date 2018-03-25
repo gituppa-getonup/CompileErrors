@@ -17,6 +17,7 @@ public class Collectable {
     private String description;
     private String country;
     private String city;
+    private String imageUri;
 
     public Collectable() {
     }
@@ -37,6 +38,9 @@ public class Collectable {
         }
         if(contentValues.containsKey("city")) {
             collectable.setCity(contentValues.getAsString("city"));
+        }
+        if(contentValues.containsKey("imageUri")) {
+            collectable.setImageUri(contentValues.getAsString("imageUri"));
         }
         return collectable;
     }
@@ -80,4 +84,9 @@ public class Collectable {
     public void setCity(String city) {
         this.city = city;
     }
+
+    public String getImageUri() { return imageUri; }
+
+    public void setImageUri(String imageUri) { this.imageUri = imageUri; }
+
 }

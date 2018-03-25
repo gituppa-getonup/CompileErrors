@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.CancellationSignal;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -38,25 +37,12 @@ public class CollectableProvider extends ContentProvider {
             CollectableDao collectableDao = CollectableDatabase.getInstance(context).collectableDao();
             final Cursor cursor;
             if (code == 1) {
-
-                /*
-                Collectable collectable = new Collectable();
-                collectable.setName("Name from code");
-                collectable.setDescription("Description from code");
-                collectable.setCountry("USA");
-                collectable.setCity("NYC");
-
-                collectableDao.insert(collectable);
-                */
-
                 cursor = collectableDao.selectAll();
             } else {
                 cursor = collectableDao.selectById(ContentUris.parseId(uri));
             }
             cursor.setNotificationUri(context.getContentResolver(), uri);
             return cursor;
-
-
         } else {
             Log.e(TAG, "unknown URI");
             throw new IllegalArgumentException("Unknown URI: " + uri);

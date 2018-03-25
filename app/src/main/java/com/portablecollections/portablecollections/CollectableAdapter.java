@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -41,6 +42,7 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView mText;
+        ImageView mView;
 
         ViewHolder(ViewGroup parent) {
             super(LayoutInflater.from(parent.getContext()).inflate(
@@ -49,6 +51,4 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
         }
 
     }
-
-
 }

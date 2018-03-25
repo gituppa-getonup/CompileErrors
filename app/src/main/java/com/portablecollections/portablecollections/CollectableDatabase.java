@@ -12,18 +12,11 @@ public abstract class CollectableDatabase extends RoomDatabase {
     public abstract CollectableDao collectableDao();
     private static CollectableDatabase collectableDatabase;
 
-    public static CollectableDatabase getInstance(Context context) {
+    static CollectableDatabase getInstance(Context context) {
         if(collectableDatabase == null) {
             collectableDatabase = Room.databaseBuilder(context.getApplicationContext(), CollectableDatabase.class, "collectables")
                     .build();
-
         }
         return collectableDatabase;
-    }
-
-    private void insertTestData() {
-        beginTransaction();
-
-        endTransaction();
     }
 }

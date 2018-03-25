@@ -15,7 +15,9 @@
         <EditText
             android:id="@+id/new_name"
             android:layout_width="0dp"
-            android:layout_height="45dp"
+            android:layout_height="39dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
             android:layout_marginTop="8dp"
             android:ems="10"
             android:hint="name your collectable"
@@ -42,10 +44,10 @@
             android:id="@+id/new_done"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
             android:text="DONE"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_editor_absoluteX="276dp" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </android.support.constraint.ConstraintLayout>
 </android.support.constraint.ConstraintLayout>

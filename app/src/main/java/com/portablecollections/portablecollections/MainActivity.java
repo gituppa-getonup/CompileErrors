@@ -3,6 +3,7 @@ package com.portablecollections.portablecollections;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -15,16 +16,18 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getName();
     private final static int LOADER_COLLECTABLES = 1;
     public final static int CAMERA_REQUEST = 1;
-    public final static String EXTRA_TAKENPICTURE = "TAKEN_PICTURE";
+    private Bitmap takenPicture;
     private CollectableAdapter mCollectableAdapter;
-    private CollectablePictureHelper pictureHelper;
+    private File imageFile;
+    CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,18 +46,36 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                imageFile = pictureHelper.createImageFile(getApplicationContext());
+                if(imageFile != null) {
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureHelper.imageUri);
+                }
+                cameraIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
             }
         });
     }
 
+    // todo: insert the creation of a temp file here and pass it to the intent.
+    // the camera writes to that temp file,
+    // the temp file's uri should be retrieved,
+    // the uri is stored in Room,
+    // the image is broadcasted to the gallery,
+    // the recycleview is fed by images from Room's picture uri's,
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent takePictureIntent) {
-        Bitmap takenPicture = pictureHelper.receiveImage(requestCode, resultCode, getApplicationContext(), takePictureIntent);
+        try{
+            Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
+            takenPicture = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+        } catch (IOException e) {
+            Log.e(TAG, "Unable to read the bitmap of the taken picture");
+        }
+
         byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(takenPicture);
 
-        Intent intent = new Intent(this, NewCollectableActivity.class);
-        intent.putExtra(EXTRA_TAKENPICTURE, takenPictureArray);
+        Intent intent = new Intent(getApplicationContext(), NewCollectableActivity.class);
+        intent.putExtra("picture", takenPictureArray);
         startActivity(intent);
     }
 
@@ -66,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                         case LOADER_COLLECTABLES:
                             return new CursorLoader(getApplicationContext(),
                                     CollectableProvider.URI_COLLECTABLES,
-                                    new String[]{"name", "description", "country", "city"},
+                                    new String[]{"name", "description", "country", "city", "imageUri"},
                                     null,
                                     null,
                                     null
@@ -75,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
                             Log.e(TAG, "mLoaderCallbacks");
                             throw new IllegalArgumentException();
                     }
-
                 }
 
                 @Override
@@ -95,8 +115,5 @@ public class MainActivity extends AppCompatActivity {
                             break;
                     }
                 }
-
-
             };
-
 }
