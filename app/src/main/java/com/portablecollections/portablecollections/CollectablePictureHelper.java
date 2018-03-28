@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 import java.io.ByteArrayOutputStream;
@@ -36,6 +37,17 @@ public class CollectablePictureHelper extends FileProvider {
         takenPicture.compress(Bitmap.CompressFormat.PNG, 100, stream);
         return stream.toByteArray();
     }
+
+    Bitmap getBitmapFromString(String imageUriString, Context context) {
+        Bitmap imageBitmap = null;
+        Uri imageUri = Uri.parse(imageUriString);
+        try {
+            imageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
+        } catch (IOException e) {
+            Log.e(TAG, "IOException while converting string to uri to bitmap");
+        }
+        return imageBitmap;
+        }
 
     File createImageFile(Context context) {
         try {

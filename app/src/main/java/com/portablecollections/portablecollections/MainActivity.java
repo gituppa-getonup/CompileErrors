@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         final RecyclerView recycler1 = findViewById(R.id.recycler1);
         recycler1.setLayoutManager(new LinearLayoutManager(recycler1.getContext()));
 
-        mCollectableAdapter = new CollectableAdapter();
+        mCollectableAdapter = new CollectableAdapter(this.getApplicationContext());
         recycler1.setAdapter(mCollectableAdapter);
         getSupportLoaderManager().initLoader(1, null, mLoaderCallbacks);
 
