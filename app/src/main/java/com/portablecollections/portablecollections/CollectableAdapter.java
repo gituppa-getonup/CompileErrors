@@ -4,8 +4,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -34,7 +36,6 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         if (mCursor.moveToPosition(position)) {
-            // send String, receive Bitmap
 
             String imageUriString = mCursor.getString(mCursor.getColumnIndexOrThrow("imageUri"));
             Bitmap bitmap = pictureHelper.getBitmapFromString(imageUriString, context);
@@ -63,7 +64,9 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
 
         ViewHolder(ViewGroup parent) {
             super(LayoutInflater.from(parent.getContext()).inflate(
-                    R.layout.part_of_recycleview, parent, false));
+                    (Build.VERSION.SDK_INT >= 21 ? R.layout.part_of_recycleview_fancy : R.layout.part_of_recycleview)
+                    , parent
+                    , false));
             mView = itemView.findViewById(R.id.recyclerImageView);
             mText = itemView.findViewById(R.id.recyclerTextView);
 
