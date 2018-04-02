@@ -15,6 +15,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         recycler1.setAdapter(mCollectableAdapter);
         getSupportLoaderManager().initLoader(1, null, mLoaderCallbacks);
 
-        Button addCollectableButton = this.findViewById(R.id.addCollectable);
+        ImageButton addCollectableButton = this.findViewById(R.id.addCollectable);
         addCollectableButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
