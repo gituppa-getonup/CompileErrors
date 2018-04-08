@@ -57,13 +57,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // todo: insert the creation of a temp file here and pass it to the intent.
-    // the camera writes to that temp file,
-    // the temp file's uri should be retrieved,
-    // the uri is stored in Room,
-    // the image is broadcasted to the gallery,
-    // the recycleview is fed by images from Room's picture uri's,
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent takePictureIntent) {
         try{

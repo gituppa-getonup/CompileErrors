@@ -64,7 +64,7 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
 
         ViewHolder(ViewGroup parent) {
             super(LayoutInflater.from(parent.getContext()).inflate(
-                    (Build.VERSION.SDK_INT >= 21 ? R.layout.part_of_recycleview_fancy : R.layout.part_of_recycleview)
+                    R.layout.part_of_recycleview
                     , parent
                     , false));
             mView = itemView.findViewById(R.id.recyclerImageView);
