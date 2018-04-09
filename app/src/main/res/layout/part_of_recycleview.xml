@@ -7,16 +7,16 @@
 
     <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/recyclerImageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:contentDescription="@android:string/unknownName"
-        android:scaleType="centerInside"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
         />
-
 
     <TextView
         android:id="@+id/recyclerTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Name not set"
         android:textAlignment="center"
@@ -24,7 +24,9 @@
         android:layout_alignTop="@id/recyclerImageView"
         android:layout_alignRight="@id/recyclerImageView"
         android:layout_alignBottom="@id/recyclerImageView"
+        android:background="@drawable/scrim"
         android:textAppearance="@android:style/TextAppearance.Material.Display1"
+        android:textColor="#FFFFFFFF"
         />
 
 </RelativeLayout>
