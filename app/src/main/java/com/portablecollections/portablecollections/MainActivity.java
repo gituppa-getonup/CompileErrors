@@ -10,14 +10,12 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
-import android.widget.Button;
-import android.widget.ImageButton;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +36,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         final RecyclerView recycler1 = findViewById(R.id.recycler1);
-        recycler1.setLayoutManager(new LinearLayoutManager(recycler1.getContext()));
+
+        recycler1.setLayoutManager(new LinearLayoutManager(recycler1.getContext(), LinearLayoutManager.HORIZONTAL, false));
+        PagerSnapHelper pagerSnapHelper = new PagerSnapHelper();
+        pagerSnapHelper.attachToRecyclerView(recycler1);
 
         mCollectableAdapter = new CollectableAdapter(this.getApplicationContext());
         recycler1.setAdapter(mCollectableAdapter);
