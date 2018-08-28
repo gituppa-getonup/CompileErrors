@@ -3,22 +3,24 @@ package com.portablecollections.portablecollections;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.FileInputStream;
-
 
 public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.ViewHolder> {
 
     private Context context;
+    private long identifier;
+    public long getIdentifier() {
+        return identifier;
+    }
+    private void setIdentifier(long identifier) {
+        this.identifier = identifier;
+    }
 
     CollectableAdapter(Context context) {
         this.context = context;
@@ -43,6 +45,12 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
 
             String nameString = mCursor.getString(mCursor.getColumnIndexOrThrow("name"));
             holder.mText.setText(nameString);
+
+            setIdentifier(holder.getItemId());
+            // todo getItemId seems to always return -1
+            // and getAdapterPosition() does not seem right, unless it is used to retrieve the identifier in another way.
+
+
         }
 
     }

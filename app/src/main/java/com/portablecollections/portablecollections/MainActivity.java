@@ -35,23 +35,38 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final RecyclerView recycler1 = findViewById(R.id.recycler1);
+        final RecyclerView recycler = findViewById(R.id.recycler);
 
-        recycler1.setLayoutManager(new LinearLayoutManager(recycler1.getContext(), LinearLayoutManager.HORIZONTAL, false));
+        recycler.setLayoutManager(new LinearLayoutManager(recycler.getContext(), LinearLayoutManager.HORIZONTAL, false));
         PagerSnapHelper pagerSnapHelper = new PagerSnapHelper();
-        pagerSnapHelper.attachToRecyclerView(recycler1);
+        pagerSnapHelper.attachToRecyclerView(recycler);
+
+        // todo prevent error at first-time usage because room database is empty.
 
         mCollectableAdapter = new CollectableAdapter(this.getApplicationContext());
-        recycler1.setAdapter(mCollectableAdapter);
+        recycler.setAdapter(mCollectableAdapter);
         getSupportLoaderManager().initLoader(1, null, mLoaderCallbacks);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton details = findViewById(R.id.details);
+        details.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                long identifier = mCollectableAdapter.getIdentifier();
+                Intent detailsIntent = new Intent(getApplicationContext(), CollectableDetails.class);
+                detailsIntent.putExtra("identifier", identifier);
+                startActivity(detailsIntent);
+
+            }
+        });
+
+        FloatingActionButton add = findViewById(R.id.add);
+        add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 imageFile = pictureHelper.createImageFile(getApplicationContext());
-                if(imageFile != null) {
+                if (imageFile != null) {
                     cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureHelper.imageUri);
                 }
                 cameraIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -62,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent takePictureIntent) {
-        try{
+        try {
             Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
             takenPicture = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
         } catch (IOException e) {

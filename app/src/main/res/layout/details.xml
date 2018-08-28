@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/detailsImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="15dp"
+        android:layout_marginTop="16dp"
+        android:minHeight="150dp"
+        android:minWidth="150dp"
+        app:srcCompat="@android:drawable/ic_menu_report_image" />
+
+    <TextView
+        android:id="@+id/textItemName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/detailsImage"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_toLeftOf="@+id/detailsImage"
+        android:text="ItemName" />
+
+    <TextView
+        android:id="@+id/textCountry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/textItemName"
+        android:layout_below="@+id/textItemName"
+        android:layout_marginTop="16dp"
+        android:layout_toLeftOf="@+id/detailsImage"
+        android:text="Country" />
+
+    <TextView
+        android:id="@+id/textCity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/textItemName"
+        android:layout_below="@+id/textCountry"
+        android:layout_marginTop="16dp"
+        android:layout_toLeftOf="@+id/detailsImage"
+        android:text="City" />
+
+    <CheckBox
+        android:id="@+id/checkWantIt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/textItemName"
+        android:layout_below="@+id/textCity"
+        android:layout_marginTop="16dp"
+        android:layout_toLeftOf="@+id/detailsImage"
+        android:text="Want it" />
+
+    <CheckBox
+        android:id="@+id/checkGotIt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/textItemName"
+        android:layout_below="@+id/checkWantIt"
+        android:layout_marginTop="16dp"
+        android:layout_toLeftOf="@+id/detailsImage"
+        android:text="Got it" />
+
+    <EditText
+        android:id="@+id/textDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/textItemName"
+        android:layout_below="@+id/checkGotIt"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        android:text="Description" />
+</RelativeLayout>
