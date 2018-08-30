@@ -41,7 +41,7 @@ public interface CollectableDao {
      *
      * @return A {@link Cursor} of the collectables in the table.
      */
-    @Query("SELECT name, description, country, city, imageUri FROM collectables")
+    @Query("SELECT id, name, description, country, city, imageUri FROM collectables")
     Cursor selectAll();
 
     /**
@@ -50,7 +50,7 @@ public interface CollectableDao {
      * @param id the id of the record that is to be retrieved.
      * @return a {@link Cursor} of the collectable in the database.
      */
-    @Query("SELECT name, description, country, city, imageUri  FROM collectables WHERE id = :id")
+    @Query("SELECT id, name, description, country, city, imageUri  FROM collectables WHERE id = :id")
     Cursor selectById(long id);
 
     /**

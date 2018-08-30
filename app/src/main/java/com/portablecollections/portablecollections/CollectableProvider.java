@@ -80,9 +80,9 @@ public class CollectableProvider extends ContentProvider {
                 }
 
                 Collectable collectable = Collectable.fromContentValues(contentValues);
+                CollectableDao collectableDao = CollectableDatabase.getInstance(context).collectableDao();
 
-                final long id = CollectableDatabase.getInstance(context).collectableDao()
-                        .insert(collectable);
+                final long id = collectableDao.insert(collectable);
 
                 context.getContentResolver().notifyChange(uri, null);
                 return ContentUris.withAppendedId(uri, id);

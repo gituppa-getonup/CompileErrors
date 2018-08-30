@@ -46,7 +46,9 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
             String nameString = mCursor.getString(mCursor.getColumnIndexOrThrow("name"));
             holder.mText.setText(nameString);
 
-            setIdentifier(holder.getItemId());
+            setIdentifier(getItemId(position));
+
+            //setIdentifier(holder.getLayoutPosition());
             // todo getItemId seems to always return -1
             // and getAdapterPosition() does not seem right, unless it is used to retrieve the identifier in another way.
 
@@ -63,6 +65,11 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
     public void setCollectables(Cursor cursor) {
         mCursor = cursor;
         notifyDataSetChanged();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return mCursor.getLong(mCursor.getColumnIndexOrThrow("id"));
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
