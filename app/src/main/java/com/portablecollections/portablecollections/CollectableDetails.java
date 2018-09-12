@@ -41,9 +41,9 @@ public class CollectableDetails extends AppCompatActivity {
 
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
-        long identifier = extras.getLong("identifier");
+        long identifier = extras.getLong("identifier", 0L);
         EditText textDescription = findViewById(R.id.textDescription);
-        String test = String.valueOf(identifier);
+        String test = Long.toString(identifier);
         textDescription.setText(test);
 
         //todo : add stuff to fill all the fields based on the retrieved identifier

@@ -16,6 +16,8 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,8 +43,6 @@ public class MainActivity extends AppCompatActivity {
         PagerSnapHelper pagerSnapHelper = new PagerSnapHelper();
         pagerSnapHelper.attachToRecyclerView(recycler);
 
-        // todo prevent error at first-time usage because room database is empty.
-
         mCollectableAdapter = new CollectableAdapter(this.getApplicationContext());
         recycler.setAdapter(mCollectableAdapter);
         getSupportLoaderManager().initLoader(1, null, mLoaderCallbacks);
@@ -52,7 +52,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                long identifier = mCollectableAdapter.getIdentifier();
+                ImageView imageView = findViewById(R.id.recyclerImageView);
+                long identifier = (Long)imageView.getTag();
+
                 Intent detailsIntent = new Intent(getApplicationContext(), CollectableDetails.class);
                 detailsIntent.putExtra("identifier", identifier);
                 startActivity(detailsIntent);
@@ -99,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                         case LOADER_COLLECTABLES:
                             return new CursorLoader(getApplicationContext(),
                                     CollectableProvider.URI_COLLECTABLES,
-                                    new String[]{"name", "description", "country", "city", "imageUri"},
+                                    new String[]{"id", "name", "description", "country", "city", "imageUri"},
                                     null,
                                     null,
                                     null

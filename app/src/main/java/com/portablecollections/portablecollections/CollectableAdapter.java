@@ -14,13 +14,6 @@ import android.widget.TextView;
 public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.ViewHolder> {
 
     private Context context;
-    private long identifier;
-    public long getIdentifier() {
-        return identifier;
-    }
-    private void setIdentifier(long identifier) {
-        this.identifier = identifier;
-    }
 
     CollectableAdapter(Context context) {
         this.context = context;
@@ -46,12 +39,8 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
             String nameString = mCursor.getString(mCursor.getColumnIndexOrThrow("name"));
             holder.mText.setText(nameString);
 
-            setIdentifier(getItemId(position));
-
-            //setIdentifier(holder.getLayoutPosition());
-            // todo getItemId seems to always return -1
-            // and getAdapterPosition() does not seem right, unless it is used to retrieve the identifier in another way.
-
+            long identifier = mCursor.getLong(mCursor.getColumnIndexOrThrow("id"));
+            holder.mView.setTag(identifier);
 
         }
 
@@ -84,7 +73,6 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
                     , false));
             mView = itemView.findViewById(R.id.recyclerImageView);
             mText = itemView.findViewById(R.id.recyclerTextView);
-
         }
 
     }
