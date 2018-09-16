@@ -8,13 +8,14 @@
     <ImageView
         android:id="@+id/detailsImage"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="194dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="15dp"
         android:layout_marginTop="16dp"
         android:minHeight="150dp"
         android:minWidth="150dp"
+        android:scaleType="fitEnd"
         app:srcCompat="@android:drawable/ic_menu_report_image" />
 
     <TextView

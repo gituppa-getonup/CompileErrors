@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                         case LOADER_COLLECTABLES:
                             return new CursorLoader(getApplicationContext(),
                                     CollectableProvider.URI_COLLECTABLES,
-                                    new String[]{"id", "name", "description", "country", "city", "imageUri"},
+                                    new String[]{"id", "name", "description", "country", "city", "imageUri", "wantIt", "gotIt"},
                                     null,
                                     null,
                                     null

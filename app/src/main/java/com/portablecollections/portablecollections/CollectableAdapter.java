@@ -40,6 +40,7 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
             holder.mText.setText(nameString);
 
             long identifier = mCursor.getLong(mCursor.getColumnIndexOrThrow("id"));
+
             holder.mView.setTag(identifier);
 
         }

@@ -22,6 +22,7 @@ public class CollectableProvider extends ContentProvider {
 
     static {
         MATCHER.addURI(AUTHORITY, "collectables", 1);
+        MATCHER.addURI(AUTHORITY, "collectables/#", 2);
     }
 
 
@@ -29,7 +30,7 @@ public class CollectableProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         final int code = MATCHER.match(uri);
-        if (code == 1) {
+        if (code == 1 || code == 2) {
             final Context context = getContext();
             if (context == null) {
                 return null;
