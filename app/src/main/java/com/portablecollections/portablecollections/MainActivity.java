@@ -17,10 +17,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private CollectableAdapter mCollectableAdapter;
     private File imageFile;
     CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper();
+    private boolean emptyDb = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,20 +51,35 @@ public class MainActivity extends AppCompatActivity {
         recycler.setAdapter(mCollectableAdapter);
         getSupportLoaderManager().initLoader(1, null, mLoaderCallbacks);
 
-        FloatingActionButton details = findViewById(R.id.details);
-        details.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        Future future = es.submit(new QueryCount());
 
-                ImageView imageView = findViewById(R.id.recyclerImageView);
-                long identifier = (Long)imageView.getTag();
+        try {
+            future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(TAG, "something went wrong counting the records in a separate thread");
+        }
 
-                Intent detailsIntent = new Intent(getApplicationContext(), CollectableDetails.class);
-                detailsIntent.putExtra("identifier", identifier);
-                startActivity(detailsIntent);
+        if (emptyDb == false) {
+            FloatingActionButton details = findViewById(R.id.details);
+            details.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
 
-            }
-        });
+                    ImageView imageView = findViewById(R.id.recyclerImageView);
+                    long identifier = (Long) imageView.getTag();
+
+                    Intent detailsIntent = new Intent(getApplicationContext(), CollectableDetails.class);
+                    detailsIntent.putExtra("identifier", identifier);
+                    startActivity(detailsIntent);
+
+                }
+            });
+        } else {
+            FloatingActionButton details = findViewById(R.id.details);
+            details.setVisibility(View.INVISIBLE);
+        }
+
 
         FloatingActionButton add = findViewById(R.id.add);
         add.setOnClickListener(new View.OnClickListener() {
@@ -130,4 +149,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             };
+
+    private class QueryCount implements Runnable {
+        @Override
+        public void run() {
+            CollectableDao collectableDao = CollectableDatabase.getInstance(getApplicationContext()).collectableDao();
+            int count = collectableDao.count();
+            emptyDb = count == 0;
+        }
+    }
 }
