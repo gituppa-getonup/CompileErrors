@@ -1,26 +1,102 @@
 package com.portablecollections.portablecollections;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
+import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.List;
+
 
 public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.ViewHolder> {
 
+    private SortedList<Collectable> sortedList;
+    static CollectableAdapter collectableAdapter;
     private Context context;
 
-    CollectableAdapter(Context context) {
-        this.context = context;
+    public static CollectableAdapter getCollectableAdapter(Context context) {
+        if (collectableAdapter == null) {
+            return new CollectableAdapter(context);
+        } else {
+            return collectableAdapter;
+        }
     }
 
-    private Cursor mCursor;
-    CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper();
+    private CollectableAdapter(Context context) {
+        this.context = context;
+        sortedList = new SortedList<>(Collectable.class, new SortedListAdapterCallback<Collectable>(this) {
+            @Override
+            public int compare(Collectable c1, Collectable c2) {
+                return c1.getName().compareTo(c2.getName());
+            }
+
+            @Override
+            public void onInserted(int position, int count) {
+                notifyItemRangeInserted(position, count);
+            }
+
+            @Override
+            public void onRemoved(int position, int count) {
+                notifyItemRangeRemoved(position, count);
+            }
+
+            @Override
+            public void onMoved(int fromPostion, int toPosition) {
+                notifyItemMoved(fromPostion, toPosition);
+            }
+
+            @Override
+            public void onChanged(int position, int count) {
+                notifyItemRangeChanged(position, count);
+            }
+
+            @Override
+            public boolean areContentsTheSame(Collectable oldCol, Collectable newCol) {
+                return oldCol.getName().equals(newCol.getName());
+            }
+
+            @Override
+            public boolean areItemsTheSame(Collectable oldCol, Collectable newCol) {
+                return oldCol.getId() == newCol.getId();
+            }
+
+        }
+        );
+    }
+
+
+    public int add(Collectable col) {
+        return sortedList.add(col);
+    }
+
+    public void addAll(List<Collectable> items) {
+        sortedList.beginBatchedUpdates();
+        for (Collectable item : items) {
+            sortedList.add(item);
+        }
+        sortedList.endBatchedUpdates();
+    }
+
+    public boolean remove(Collectable col) {
+        return sortedList.remove(col);
+    }
+
+    public void clear() {
+        sortedList.beginBatchedUpdates();
+        //remove items at end, to avoid unnecessary array shifting
+        while (sortedList.size() > 0) {
+            sortedList.removeItemAt(sortedList.size() - 1);
+        }
+        sortedList.endBatchedUpdates();
+    }
+
+    CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(context);
 
     @NonNull
     @Override
@@ -30,39 +106,26 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        if (mCursor.moveToPosition(position)) {
-
-            String imageUriString = mCursor.getString(mCursor.getColumnIndexOrThrow("imageUri"));
-            Bitmap bitmap = pictureHelper.getBitmapFromString(imageUriString, context);
-            holder.mView.setImageBitmap(bitmap);
-
-            String nameString = mCursor.getString(mCursor.getColumnIndexOrThrow("name"));
-            holder.mText.setText(nameString);
-
-            long identifier = mCursor.getLong(mCursor.getColumnIndexOrThrow("id"));
-
-            holder.mView.setTag(identifier);
-
-        }
-
+        Collectable collectable = sortedList.get(position);
+        String imageUriString = collectable.getImageUri();
+        Bitmap bitmap = pictureHelper.getBitmapFromString(imageUriString);
+        holder.mView.setImageBitmap(bitmap);
+        String nameString = collectable.getName();
+        holder.mText.setText(nameString);
+        holder.mView.setTag(collectable);
     }
 
     @Override
     public int getItemCount() {
-        return mCursor == null ? 0 : mCursor.getCount();
-    }
-
-    public void setCollectables(Cursor cursor) {
-        mCursor = cursor;
-        notifyDataSetChanged();
+        return sortedList.size();
     }
 
     @Override
     public long getItemId(int position) {
-        return mCursor.getLong(mCursor.getColumnIndexOrThrow("id"));
+        return sortedList.get(position).getId();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView mView;
         TextView mText;

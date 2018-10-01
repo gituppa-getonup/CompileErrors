@@ -1,5 +1,6 @@
 package com.portablecollections.portablecollections;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -20,6 +21,8 @@ import android.widget.ImageView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,13 +30,18 @@ import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity {
 
+    // todo: landscape pics should not block the input in the details view
+    // todo: create option to delete a collectable
+    // todo: after adding a collectable, return to that one
+    // todo: auto sort on name
+
     private static final String TAG = MainActivity.class.getName();
     private final static int LOADER_COLLECTABLES = 1;
     public final static int CAMERA_REQUEST = 1;
     private Bitmap takenPicture;
     private CollectableAdapter mCollectableAdapter;
     private File imageFile;
-    CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper();
+    CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
     private boolean emptyDb = true;
 
     @Override
@@ -47,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         PagerSnapHelper pagerSnapHelper = new PagerSnapHelper();
         pagerSnapHelper.attachToRecyclerView(recycler);
 
-        mCollectableAdapter = new CollectableAdapter(this.getApplicationContext());
+        mCollectableAdapter = CollectableAdapter.getCollectableAdapter(this);
         recycler.setAdapter(mCollectableAdapter);
         getSupportLoaderManager().initLoader(1, null, mLoaderCallbacks);
 
@@ -65,13 +73,13 @@ public class MainActivity extends AppCompatActivity {
             details.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
                     ImageView imageView = findViewById(R.id.recyclerImageView);
-                    long identifier = (Long) imageView.getTag();
+                    Collectable collectable = (Collectable) imageView.getTag();
 
                     Intent detailsIntent = new Intent(getApplicationContext(), CollectableDetails.class);
-                    detailsIntent.putExtra("identifier", identifier);
+                    detailsIntent.putExtra("collectable", collectable);
                     startActivity(detailsIntent);
+
 
                 }
             });
@@ -107,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
         byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(takenPicture);
 
-        Intent intent = new Intent(getApplicationContext(), NewCollectableActivity.class);
+        Intent intent = new Intent(this, NewCollectableActivity.class);
         intent.putExtra("picture", takenPictureArray);
         startActivity(intent);
     }
@@ -123,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                                     new String[]{"id", "name", "description", "country", "city", "imageUri", "wantIt", "gotIt"},
                                     null,
                                     null,
-                                    null
+                                    "name asc"
                             );
                         default:
                             Log.e(TAG, "mLoaderCallbacks");
@@ -135,16 +143,31 @@ public class MainActivity extends AppCompatActivity {
                 public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
                     switch (loader.getId()) {
                         case LOADER_COLLECTABLES:
-                            mCollectableAdapter.setCollectables(cursor);
+                            List<Collectable> collectableArrayList = new ArrayList<>();
+                            while (cursor.moveToNext()) {
+                                Collectable collectable = new Collectable();
+                                collectable.setId(Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow("id"))));
+                                collectable.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                                collectable.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+                                collectable.setCountry(cursor.getString(cursor.getColumnIndexOrThrow("country")));
+                                collectable.setCity(cursor.getString(cursor.getColumnIndexOrThrow("city")));
+                                collectable.setImageUri(cursor.getString(cursor.getColumnIndexOrThrow("imageUri")));
+                                collectable.setWantIt(cursor.getInt(cursor.getColumnIndexOrThrow("wantIt")) == 1);
+                                collectable.setGotIt(cursor.getInt(cursor.getColumnIndexOrThrow("gotIt")) == 1);
+                                collectableArrayList.add(collectable);
+                            }
+                            mCollectableAdapter.clear();
+                            mCollectableAdapter.addAll(collectableArrayList);
                             break;
                     }
                 }
+
 
                 @Override
                 public void onLoaderReset(Loader<Cursor> loader) {
                     switch (loader.getId()) {
                         case LOADER_COLLECTABLES:
-                            mCollectableAdapter.setCollectables(null);
+                            mCollectableAdapter.clear();
                             break;
                     }
                 }

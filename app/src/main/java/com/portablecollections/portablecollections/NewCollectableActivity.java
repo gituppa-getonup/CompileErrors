@@ -23,17 +23,18 @@ public class NewCollectableActivity extends AppCompatActivity {
     private EditText newNameText;
     private ContentValues contentValues;
     private static final String TAG = NewCollectableActivity.class.getName();
-    CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper();
+    CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
+    private Uri returnUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.create_new_collectable);
 
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
         byte[] takenPictureArray = intent.getByteArrayExtra("picture");
         Bitmap takenPicture = BitmapFactory.decodeByteArray(takenPictureArray, 0, takenPictureArray.length);
-        ImageView newImageView = findViewById(R.id.new_imageview);
+        final ImageView newImageView = findViewById(R.id.new_imageview);
         newImageView.setImageBitmap(takenPicture);
 
         Button done = this.findViewById(R.id.new_done);
@@ -43,10 +44,12 @@ public class NewCollectableActivity extends AppCompatActivity {
             public void onClick(View view) {
                 newNameText = findViewById(R.id.new_name);
                 String newName = newNameText.getText().toString();
+                String imageUri = Uri.fromFile(pictureHelper.imageFile).toString();
 
                 contentValues = new ContentValues();
                 contentValues.put("name", newName);
-                contentValues.put("imageUri", Uri.fromFile(pictureHelper.imageFile).toString());
+                contentValues.put("imageUri", imageUri);
+
                 ExecutorService es = Executors.newSingleThreadExecutor();
                 Future future = es.submit(new InsertData());
                 try {
@@ -54,7 +57,22 @@ public class NewCollectableActivity extends AppCompatActivity {
                 } catch (InterruptedException | ExecutionException e) {
                     Log.e(TAG, "something went wrong creating the Room object in a separate thread");
                 }
+
+                long newIdentifier = Long.valueOf(returnUri.getLastPathSegment());
+
+                Collectable collectable = new Collectable();
+                collectable.setId(newIdentifier);
+                collectable.setName(newName);
+                collectable.setImageUri(imageUri);
+
+                CollectableAdapter collectableAdapter = CollectableAdapter.getCollectableAdapter(getApplicationContext());
+                collectableAdapter.add(collectable);
+
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("collectable", collectable);
+
                 Intent backToMainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                backToMainActivity.putExtras(bundle);
                 startActivity(backToMainActivity);
             }
         });
@@ -63,7 +81,7 @@ public class NewCollectableActivity extends AppCompatActivity {
     private class InsertData implements Runnable {
         @Override
         public void run() {
-            getContentResolver().insert(CollectableProvider.URI_COLLECTABLES, contentValues);
+            returnUri = getContentResolver().insert(CollectableProvider.URI_COLLECTABLES, contentValues);
         }
     }
 }

@@ -29,9 +29,9 @@ public class CollectableDetails extends AppCompatActivity {
 
     private static final String TAG = CollectableDetails.class.getName();
 
-    private long identifier = 0L;
     Bitmap detailsBitmap;
     private Collectable collectable;
+    private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
 
     Uri uri;
 
@@ -42,20 +42,20 @@ public class CollectableDetails extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.details);
 
+        // define the views:
+        ImageView detailsImage = findViewById(R.id.detailsImage);
+        EditText textItemName = findViewById(R.id.textItemName);
+        EditText textCountry = findViewById(R.id.textCountry);
+        EditText textCity = findViewById(R.id.textCity);
+        CheckBox checkWantIt = findViewById(R.id.checkWantIt);
+        CheckBox checkGotIt = findViewById(R.id.checkGotIt);
+        EditText textDescription = findViewById(R.id.textDescription);
+
+        // retrieve collectable from intent:
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
-        identifier = extras.getLong("identifier", 0L);
-        uri = ContentUris.withAppendedId(CollectableProvider.URI_COLLECTABLES, identifier);
-
-        contentValues.put("id", identifier);
-        ExecutorService es = Executors.newSingleThreadExecutor();
-        Future future = es.submit(new QueryData());
-
-        try {
-            future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            Log.e(TAG, "something went wrong creating the Room object in a separate thread");
-        }
+        collectable = (Collectable)extras.getSerializable("collectable");
+        uri = ContentUris.withAppendedId(CollectableProvider.URI_COLLECTABLES, collectable.getId());
 
         // pre-fill the contentValues to prevent erasure of fields:
         contentValues.put("id", collectable.getId());
@@ -67,30 +67,16 @@ public class CollectableDetails extends AppCompatActivity {
         contentValues.put("wantIt", collectable.getWantIt());
         contentValues.put("gotIt", collectable.getGotIt());
 
-        // define the views:
-        ImageView detailsImage = findViewById(R.id.detailsImage);
-        EditText textItemName = findViewById(R.id.textItemName);
-        EditText textCountry = findViewById(R.id.textCountry);
-        EditText textCity = findViewById(R.id.textCity);
-        CheckBox checkWantIt = findViewById(R.id.checkWantIt);
-        CheckBox checkGotIt = findViewById(R.id.checkGotIt);
-        EditText textDescription = findViewById(R.id.textDescription);
-
         // fill the views:
-        if (collectable != null) {
-            CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper();
-            detailsBitmap = pictureHelper.getBitmapFromString(collectable.getImageUri(), this);
-            detailsImage.setImageBitmap(detailsBitmap);
+        detailsBitmap = pictureHelper.getBitmapFromString(collectable.getImageUri());
+        detailsImage.setImageBitmap(detailsBitmap);
 
-            textItemName.setText(collectable.getName());
-            textCountry.setText(collectable.getCountry());
-            textCity.setText(collectable.getCity());
-            checkWantIt.setChecked(collectable.getWantIt());
-            checkGotIt.setChecked(collectable.getGotIt());
-            textDescription.setText(collectable.getDescription());
-        } else {
-            Log.e(TAG, "Object is null, wait for the future?");
-        }
+        textItemName.setText(collectable.getName());
+        textCountry.setText(collectable.getCountry());
+        textCity.setText(collectable.getCity());
+        checkWantIt.setChecked(collectable.getWantIt());
+        checkGotIt.setChecked(collectable.getGotIt());
+        textDescription.setText(collectable.getDescription());
 
         textItemName.addTextChangedListener(new TextWatcher() {
             @Override
@@ -103,7 +89,6 @@ public class CollectableDetails extends AppCompatActivity {
                 } catch (InterruptedException | ExecutionException e) {
                     Log.e(TAG, "something went wrong updating the Room object in a separate thread");
                 }
-
             }
 
             @Override
@@ -228,26 +213,6 @@ public class CollectableDetails extends AppCompatActivity {
         );
 
 
-    }
-
-    private class QueryData implements Runnable {
-        @Override
-        public void run() {
-            String[] projection = {"id", "name", "description", "country", "city", "imageUri", "wantIt", "gotIt"};
-            Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-            while (cursor.moveToNext()) {
-                collectable = new Collectable();
-                collectable.setId(Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow("id"))));
-                collectable.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
-                collectable.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
-                collectable.setCountry(cursor.getString(cursor.getColumnIndexOrThrow("country")));
-                collectable.setCity(cursor.getString(cursor.getColumnIndexOrThrow("city")));
-                collectable.setImageUri(cursor.getString(cursor.getColumnIndexOrThrow("imageUri")));
-                collectable.setWantIt(cursor.getInt(cursor.getColumnIndexOrThrow("wantIt")) == 1);
-                collectable.setGotIt(cursor.getInt(cursor.getColumnIndexOrThrow("gotIt")) == 1);
-            }
-            cursor.close();
-        }
     }
 
     private class UpdateData implements Runnable {
