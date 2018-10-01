@@ -18,6 +18,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,10 +31,8 @@ import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity {
 
-    // todo: landscape pics should not block the input in the details view
     // todo: create option to delete a collectable
     // todo: after adding a collectable, return to that one
-    // todo: auto sort on name
 
     private static final String TAG = MainActivity.class.getName();
     private final static int LOADER_COLLECTABLES = 1;
@@ -86,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
         } else {
             FloatingActionButton details = findViewById(R.id.details);
             details.setVisibility(View.INVISIBLE);
+            Toast.makeText(this, "Click + to add your first collectable!"
+                    , Toast.LENGTH_LONG).show();
         }
 
 

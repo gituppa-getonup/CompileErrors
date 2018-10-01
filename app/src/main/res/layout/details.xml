@@ -7,7 +7,7 @@
 
     <ImageView
         android:id="@+id/detailsImage"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="194dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
@@ -81,4 +81,13 @@
         android:ems="10"
         android:inputType="textMultiLine"
         android:text="Description" />
+
+    <Button
+        android:id="@+id/details_done"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/detailsImage"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:text="DONE" />
 </RelativeLayout>

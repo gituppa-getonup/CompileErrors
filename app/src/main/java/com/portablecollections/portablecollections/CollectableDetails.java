@@ -50,6 +50,7 @@ public class CollectableDetails extends AppCompatActivity {
         CheckBox checkWantIt = findViewById(R.id.checkWantIt);
         CheckBox checkGotIt = findViewById(R.id.checkGotIt);
         EditText textDescription = findViewById(R.id.textDescription);
+        Button detailsDoneButton = findViewById(R.id.details_done);
 
         // retrieve collectable from intent:
         Intent intent = getIntent();
@@ -211,6 +212,31 @@ public class CollectableDetails extends AppCompatActivity {
                                                    }
                                                }
         );
+
+        detailsDoneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent backToMainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(backToMainActivity);
+            }
+        });
+
+        if(textItemName.getText().length() == 0) {
+            textItemName.setText("name");
+        }
+
+        if(textCity.getText().length() == 0) {
+            textCity.setText("city");
+        }
+
+        if(textCountry.getText().length() == 0) {
+            textCountry.setText("country");
+        }
+
+        if(textDescription.getText().length() == 0) {
+            textDescription.setText("description");
+        }
+
 
 
     }
