@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import java.util.List;
 
 
@@ -19,13 +18,22 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
     private SortedList<Collectable> sortedList;
     static CollectableAdapter collectableAdapter;
     private Context context;
+    private static AdapterCallback adapterCallback;
 
-    public static CollectableAdapter getCollectableAdapter(Context context) {
+    public static CollectableAdapter getCollectableAdapter(Context context, AdapterCallback adapterCallback) {
         if (collectableAdapter == null) {
-            return new CollectableAdapter(context);
-        } else {
-            return collectableAdapter;
+            collectableAdapter = new CollectableAdapter(context.getApplicationContext(), adapterCallback);
         }
+        return collectableAdapter;
+    }
+
+    public interface AdapterCallback {
+        void call(int position);
+    }
+
+    private CollectableAdapter(Context context, AdapterCallback adapterCallback) {
+        this(context);
+        this.adapterCallback = adapterCallback;
     }
 
     private CollectableAdapter(Context context) {
@@ -75,12 +83,28 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
         return sortedList.add(col);
     }
 
+    public Collectable get(int index) {
+        return sortedList.get(index);
+    }
+
+    public int indexOf(Collectable col) {
+        return sortedList.indexOf(col);
+    }
+
+    public void updateItemAt(int index, Collectable col) {
+        sortedList.updateItemAt(index, col);
+    }
+
     public void addAll(List<Collectable> items) {
         sortedList.beginBatchedUpdates();
         for (Collectable item : items) {
             sortedList.add(item);
         }
         sortedList.endBatchedUpdates();
+    }
+
+    public int getCount() {
+        return sortedList.size();
     }
 
     public boolean remove(Collectable col) {
@@ -112,7 +136,8 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
         holder.mView.setImageBitmap(bitmap);
         String nameString = collectable.getName();
         holder.mText.setText(nameString);
-        holder.mView.setTag(collectable);
+        holder.mView.setTag(R.id.TAG_COLLECTABLE, collectable);
+        adapterCallback.call(position);
     }
 
     @Override

@@ -3,9 +3,7 @@ package com.portablecollections.portablecollections;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +16,6 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +29,7 @@ public class CollectableDetails extends AppCompatActivity {
     Bitmap detailsBitmap;
     private Collectable collectable;
     private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
+    private int adapterPosition = -1;
 
     Uri uri;
 
@@ -55,7 +53,8 @@ public class CollectableDetails extends AppCompatActivity {
         // retrieve collectable from intent:
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
-        collectable = (Collectable)extras.getSerializable("collectable");
+        collectable = (Collectable) extras.getParcelable("collectable");
+        adapterPosition = extras.getInt("adapterPosition");
         uri = ContentUris.withAppendedId(CollectableProvider.URI_COLLECTABLES, collectable.getId());
 
         // pre-fill the contentValues to prevent erasure of fields:
@@ -79,10 +78,12 @@ public class CollectableDetails extends AppCompatActivity {
         checkGotIt.setChecked(collectable.getGotIt());
         textDescription.setText(collectable.getDescription());
 
+
         textItemName.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 contentValues.put("name", s.toString());
+                collectable.setName(s.toString());
                 ExecutorService es = Executors.newSingleThreadExecutor();
                 Future future = es.submit(new UpdateData());
                 try {
@@ -93,16 +94,19 @@ public class CollectableDetails extends AppCompatActivity {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int i, int j, int k) { }
+            public void onTextChanged(CharSequence s, int i, int j, int k) {
+            }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int i, int j, int k) { }
+            public void beforeTextChanged(CharSequence s, int i, int j, int k) {
+            }
         });
 
         textDescription.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 contentValues.put("description", s.toString());
+                collectable.setDescription(s.toString());
                 ExecutorService es = Executors.newSingleThreadExecutor();
                 Future future = es.submit(new UpdateData());
                 try {
@@ -114,16 +118,19 @@ public class CollectableDetails extends AppCompatActivity {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int i, int j, int k) { }
+            public void onTextChanged(CharSequence s, int i, int j, int k) {
+            }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int i, int j, int k) { }
+            public void beforeTextChanged(CharSequence s, int i, int j, int k) {
+            }
         });
 
         textCountry.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 contentValues.put("country", s.toString());
+                collectable.setCountry(s.toString());
                 ExecutorService es = Executors.newSingleThreadExecutor();
                 Future future = es.submit(new UpdateData());
                 try {
@@ -135,16 +142,19 @@ public class CollectableDetails extends AppCompatActivity {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int i, int j, int k) { }
+            public void onTextChanged(CharSequence s, int i, int j, int k) {
+            }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int i, int j, int k) { }
+            public void beforeTextChanged(CharSequence s, int i, int j, int k) {
+            }
         });
 
         textCity.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 contentValues.put("city", s.toString());
+                collectable.setCity(s.toString());
                 ExecutorService es = Executors.newSingleThreadExecutor();
                 Future future = es.submit(new UpdateData());
                 try {
@@ -156,16 +166,19 @@ public class CollectableDetails extends AppCompatActivity {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int i, int j, int k) { }
+            public void onTextChanged(CharSequence s, int i, int j, int k) {
+            }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int i, int j, int k) { }
+            public void beforeTextChanged(CharSequence s, int i, int j, int k) {
+            }
         });
 
         textDescription.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 contentValues.put("description", s.toString());
+                collectable.setDescription(s.toString());
                 ExecutorService es = Executors.newSingleThreadExecutor();
                 Future future = es.submit(new UpdateData());
                 try {
@@ -177,31 +190,19 @@ public class CollectableDetails extends AppCompatActivity {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int i, int j, int k) { }
+            public void onTextChanged(CharSequence s, int i, int j, int k) {
+            }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int i, int j, int k) { }
+            public void beforeTextChanged(CharSequence s, int i, int j, int k) {
+            }
         });
 
         checkWantIt.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                contentValues.put("wantIt", b);
-                ExecutorService es = Executors.newSingleThreadExecutor();
-                Future future = es.submit(new UpdateData());
-                try {
-                    future.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    Log.e(TAG, "something went wrong updating the Room object in a separate thread");
-                }
-            }
-        }
-        );
-
-        checkGotIt.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                                                    @Override
                                                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                                                       contentValues.put("gotIt", b);
+                                                       contentValues.put("wantIt", b);
+                                                       collectable.setWantIt(b);
                                                        ExecutorService es = Executors.newSingleThreadExecutor();
                                                        Future future = es.submit(new UpdateData());
                                                        try {
@@ -213,30 +214,46 @@ public class CollectableDetails extends AppCompatActivity {
                                                }
         );
 
+        checkGotIt.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                                  @Override
+                                                  public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                                                      contentValues.put("gotIt", b);
+                                                      collectable.setGotIt(b);
+                                                      ExecutorService es = Executors.newSingleThreadExecutor();
+                                                      Future future = es.submit(new UpdateData());
+                                                      try {
+                                                          future.get();
+                                                      } catch (InterruptedException | ExecutionException e) {
+                                                          Log.e(TAG, "something went wrong updating the Room object in a separate thread");
+                                                      }
+                                                  }
+                                              }
+        );
+
         detailsDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent backToMainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                backToMainActivity.putExtra("collectable", collectable);
                 startActivity(backToMainActivity);
             }
         });
 
-        if(textItemName.getText().length() == 0) {
+        if (textItemName.getText().length() == 0) {
             textItemName.setText("name");
         }
 
-        if(textCity.getText().length() == 0) {
+        if (textCity.getText().length() == 0) {
             textCity.setText("city");
         }
 
-        if(textCountry.getText().length() == 0) {
+        if (textCountry.getText().length() == 0) {
             textCountry.setText("country");
         }
 
-        if(textDescription.getText().length() == 0) {
+        if (textDescription.getText().length() == 0) {
             textDescription.setText("description");
         }
-
 
 
     }

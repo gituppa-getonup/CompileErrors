@@ -65,11 +65,8 @@ public class NewCollectableActivity extends AppCompatActivity {
                 collectable.setName(newName);
                 collectable.setImageUri(imageUri);
 
-                CollectableAdapter collectableAdapter = CollectableAdapter.getCollectableAdapter(getApplicationContext());
-                collectableAdapter.add(collectable);
-
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("collectable", collectable);
+                bundle.putParcelable("collectable", collectable);
 
                 Intent backToMainActivity = new Intent(getApplicationContext(), MainActivity.class);
                 backToMainActivity.putExtras(bundle);

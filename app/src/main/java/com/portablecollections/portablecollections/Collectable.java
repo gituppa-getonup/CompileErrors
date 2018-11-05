@@ -4,11 +4,11 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.content.ContentValues;
-
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 @Entity(tableName = "collectables")
-public class Collectable implements Serializable {
+public class Collectable implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     private long id;
@@ -23,6 +23,43 @@ public class Collectable implements Serializable {
 
     public Collectable() {
     }
+
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeLong(id);
+        out.writeString(name);
+        out.writeString(description);
+        out.writeString(country);
+        out.writeString(city);
+        out.writeString(imageUri);
+        out.writeInt(wantIt ? 1 : 0);
+        out.writeInt(gotIt ? 1 : 0);
+    }
+
+    public static final Parcelable.Creator<Collectable> CREATOR
+            = new Parcelable.Creator<Collectable>() {
+        public Collectable createFromParcel(Parcel in) {
+            return new Collectable(in);
+        }
+        public Collectable[] newArray(int size) {
+            return new Collectable[size];
+        }
+    };
+
+    private Collectable(Parcel in) {
+        id = in.readLong();
+        name = in.readString();
+        description = in.readString();
+        country = in.readString();
+        city = in.readString();
+        imageUri = in.readString();
+        wantIt = in.readInt() == 1;
+        gotIt = in.readInt() == 1;
+    }
+
 
     public static Collectable fromContentValues(ContentValues contentValues) {
         Collectable collectable = new Collectable();
@@ -52,6 +89,7 @@ public class Collectable implements Serializable {
         }
         return collectable;
     }
+
 
     public long getId() {
         return id;

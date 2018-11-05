@@ -1,24 +1,25 @@
 package com.portablecollections.portablecollections;
 
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
-import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.portablecollections.portablecollections.CollectableAdapter.AdapterCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,31 +32,45 @@ import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity {
 
-    // todo: create option to delete a collectable
+    // todo: create option to delete a collectable from details, with a prompt
     // todo: after adding a collectable, return to that one
+    // todo: when clicking on the picture in details view, prompt to change picture.
 
     private static final String TAG = MainActivity.class.getName();
     private final static int LOADER_COLLECTABLES = 1;
     public final static int CAMERA_REQUEST = 1;
     private Bitmap takenPicture;
-    private CollectableAdapter mCollectableAdapter;
+    private CollectableAdapter collectableAdapter;
     private File imageFile;
     CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
     private boolean emptyDb = true;
+    private RecyclerView recycler;
+    private int adapterPosition = -1;
+
+    public void setAdapterPosition(int adapterPosition) {
+        this.adapterPosition = adapterPosition;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
-        final RecyclerView recycler = findViewById(R.id.recycler);
-
+        recycler = findViewById(R.id.recycler);
         recycler.setLayoutManager(new LinearLayoutManager(recycler.getContext(), LinearLayoutManager.HORIZONTAL, false));
+
         PagerSnapHelper pagerSnapHelper = new PagerSnapHelper();
         pagerSnapHelper.attachToRecyclerView(recycler);
 
-        mCollectableAdapter = CollectableAdapter.getCollectableAdapter(this);
-        recycler.setAdapter(mCollectableAdapter);
+        collectableAdapter = CollectableAdapter.getCollectableAdapter(getApplicationContext(), new AdapterCallback() {
+            @Override
+            public void call(int position) {
+                setAdapterPosition(position);
+            }
+        });
+
+        recycler.setAdapter(collectableAdapter);
         getSupportLoaderManager().initLoader(1, null, mLoaderCallbacks);
 
         ExecutorService es = Executors.newSingleThreadExecutor();
@@ -67,19 +82,16 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "something went wrong counting the records in a separate thread");
         }
 
-        if (emptyDb == false) {
+        if (!emptyDb) {
             FloatingActionButton details = findViewById(R.id.details);
             details.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     ImageView imageView = findViewById(R.id.recyclerImageView);
-                    Collectable collectable = (Collectable) imageView.getTag();
-
+                    Collectable collectable = (Collectable) imageView.getTag(R.id.TAG_COLLECTABLE);
                     Intent detailsIntent = new Intent(getApplicationContext(), CollectableDetails.class);
                     detailsIntent.putExtra("collectable", collectable);
                     startActivity(detailsIntent);
-
-
                 }
             });
         } else {
@@ -94,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 imageFile = pictureHelper.createImageFile(getApplicationContext());
                 if (imageFile != null) {
@@ -103,7 +116,25 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
             }
         });
+
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putInt("adapterPosition", adapterPosition);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        int pos = savedInstanceState.getInt("adapterPosition"); // debug only
+        adapterPosition = savedInstanceState.getInt("adapterPosition");
+        setAdapterPosition(adapterPosition);
+        recycler.scrollToPosition(adapterPosition);
+    }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent takePictureIntent) {
@@ -118,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, NewCollectableActivity.class);
         intent.putExtra("picture", takenPictureArray);
+        int size = collectableAdapter.getItemCount();
         startActivity(intent);
     }
 
@@ -157,9 +189,16 @@ public class MainActivity extends AppCompatActivity {
                                 collectable.setGotIt(cursor.getInt(cursor.getColumnIndexOrThrow("gotIt")) == 1);
                                 collectableArrayList.add(collectable);
                             }
-                            mCollectableAdapter.clear();
-                            mCollectableAdapter.addAll(collectableArrayList);
-                            break;
+
+                            collectableAdapter.clear();
+                            collectableAdapter.addAll(collectableArrayList);
+
+                            Intent intent = getIntent();
+                            if (intent.hasExtra("collectable")) {
+                                Collectable collectable = intent.getParcelableExtra("collectable");
+                                adapterPosition = collectableAdapter.add(collectable);
+                                recycler.scrollToPosition(adapterPosition);
+                            }
                     }
                 }
 
@@ -168,11 +207,12 @@ public class MainActivity extends AppCompatActivity {
                 public void onLoaderReset(Loader<Cursor> loader) {
                     switch (loader.getId()) {
                         case LOADER_COLLECTABLES:
-                            mCollectableAdapter.clear();
+                            collectableAdapter.clear();
                             break;
                     }
                 }
             };
+
 
     private class QueryCount implements Runnable {
         @Override
