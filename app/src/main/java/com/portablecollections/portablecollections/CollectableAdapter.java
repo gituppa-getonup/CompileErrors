@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -15,25 +16,16 @@ import java.util.List;
 
 public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.ViewHolder> {
 
+    private static final String TAG = CollectableAdapter.class.getName();
     private SortedList<Collectable> sortedList;
     static CollectableAdapter collectableAdapter;
     private Context context;
-    private static AdapterCallback adapterCallback;
 
-    public static CollectableAdapter getCollectableAdapter(Context context, AdapterCallback adapterCallback) {
+    public static CollectableAdapter getCollectableAdapter(Context context) {
         if (collectableAdapter == null) {
-            collectableAdapter = new CollectableAdapter(context.getApplicationContext(), adapterCallback);
+            collectableAdapter = new CollectableAdapter(context.getApplicationContext());
         }
         return collectableAdapter;
-    }
-
-    public interface AdapterCallback {
-        void call(int position);
-    }
-
-    private CollectableAdapter(Context context, AdapterCallback adapterCallback) {
-        this(context);
-        this.adapterCallback = adapterCallback;
     }
 
     private CollectableAdapter(Context context) {
@@ -131,13 +123,15 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Collectable collectable = sortedList.get(position);
+
         String imageUriString = collectable.getImageUri();
         Bitmap bitmap = pictureHelper.getBitmapFromString(imageUriString);
         holder.mView.setImageBitmap(bitmap);
+
         String nameString = collectable.getName();
         holder.mText.setText(nameString);
+
         holder.mView.setTag(R.id.TAG_COLLECTABLE, collectable);
-        adapterCallback.call(position);
     }
 
     @Override

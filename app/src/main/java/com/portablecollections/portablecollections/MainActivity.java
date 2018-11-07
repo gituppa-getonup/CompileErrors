@@ -19,8 +19,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.portablecollections.portablecollections.CollectableAdapter.AdapterCallback;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,10 +45,6 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recycler;
     private int adapterPosition = -1;
 
-    public void setAdapterPosition(int adapterPosition) {
-        this.adapterPosition = adapterPosition;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,12 +57,7 @@ public class MainActivity extends AppCompatActivity {
         PagerSnapHelper pagerSnapHelper = new PagerSnapHelper();
         pagerSnapHelper.attachToRecyclerView(recycler);
 
-        collectableAdapter = CollectableAdapter.getCollectableAdapter(getApplicationContext(), new AdapterCallback() {
-            @Override
-            public void call(int position) {
-                setAdapterPosition(position);
-            }
-        });
+        collectableAdapter = CollectableAdapter.getCollectableAdapter(this);
 
         recycler.setAdapter(collectableAdapter);
         getSupportLoaderManager().initLoader(1, null, mLoaderCallbacks);
@@ -128,9 +117,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        int pos = savedInstanceState.getInt("adapterPosition"); // debug only
         adapterPosition = savedInstanceState.getInt("adapterPosition");
-        setAdapterPosition(adapterPosition);
         recycler.scrollToPosition(adapterPosition);
     }
 
@@ -149,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, NewCollectableActivity.class);
         intent.putExtra("picture", takenPictureArray);
-        int size = collectableAdapter.getItemCount();
         startActivity(intent);
     }
 
