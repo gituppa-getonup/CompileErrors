@@ -1,12 +1,18 @@
 package com.portablecollections.portablecollections;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -28,15 +34,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AddCollectableDialogFragment.NoticeDialogListener {
 
-    // todo: create option to delete a collectable from details, with a prompt
-    // todo: after adding a collectable, return to that one
     // todo: when clicking on the picture in details view, prompt to change picture.
 
     private static final String TAG = MainActivity.class.getName();
     private final static int LOADER_COLLECTABLES = 1;
-    public final static int CAMERA_REQUEST = 1;
+    public final static int TAKE_PHOTO = 1;
+    public final static int PICK_IMAGE_GALLERY = 2;
     private Bitmap takenPicture;
     private CollectableAdapter collectableAdapter;
     private File imageFile;
@@ -84,8 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         } else {
-            FloatingActionButton details = findViewById(R.id.details);
-            details.setVisibility(View.INVISIBLE);
+            findViewById(R.id.details).setVisibility(View.INVISIBLE);
             Toast.makeText(this, "Click + to add your first collectable!"
                     , Toast.LENGTH_LONG).show();
         }
@@ -95,14 +99,19 @@ public class MainActivity extends AppCompatActivity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                showAddDialog();
 
-                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+
+
+                /*Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 imageFile = pictureHelper.createImageFile(getApplicationContext());
                 if (imageFile != null) {
                     cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureHelper.imageUri);
                 }
                 cameraIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                */
+
             }
         });
 
@@ -125,17 +134,38 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent takePictureIntent) {
-        try {
-            Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
-            takenPicture = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-        } catch (IOException e) {
-            Log.e(TAG, "Unable to read the bitmap of the taken picture");
+        if (takePictureIntent == null || resultCode != Activity.RESULT_OK) {
+            return;
         }
 
-        byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(takenPicture);
-
         Intent intent = new Intent(this, NewCollectableActivity.class);
-        intent.putExtra("picture", takenPictureArray);
+
+        switch(requestCode) {
+            case TAKE_PHOTO:
+                try {
+                    Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
+                    takenPicture = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                } catch (IOException e) {
+                    Log.e(TAG, "Unable to read the bitmap of the taken picture");
+                }
+
+                byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(takenPicture);
+                intent.putExtra("pictureArray", takenPictureArray);
+
+                break;
+
+            case PICK_IMAGE_GALLERY:
+                Uri imageUri = takePictureIntent.getData();
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                Cursor cursor = getContentResolver().query(imageUri
+                        , filePathColumn, null, null, null);
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                String picturePath = cursor.getString(columnIndex);
+                cursor.close();
+                intent.putExtra("picturePath", picturePath);
+                break;
+        }
         startActivity(intent);
     }
 
@@ -208,4 +238,53 @@ public class MainActivity extends AppCompatActivity {
             emptyDb = count == 0;
         }
     }
+
+    public void showAddDialog() {
+        DialogFragment dialog = new AddCollectableDialogFragment();
+        dialog.show(getSupportFragmentManager(), "AddCollectableDialogFragment");
+    }
+
+    @Override
+    public void onDialogTakePhotoClick(DialogFragment dialog) {
+        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        imageFile = pictureHelper.createImageFile(getApplicationContext());
+        if (imageFile != null) {
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureHelper.imageUri);
+        }
+        cameraIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivityForResult(cameraIntent, TAKE_PHOTO);
+    }
+
+    @Override
+    public void onDialogPickImageClick(DialogFragment dialog) {
+
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PICK_IMAGE_GALLERY);
+            } else {
+                Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(galleryIntent, PICK_IMAGE_GALLERY);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults)
+    {
+        switch (requestCode) {
+            case PICK_IMAGE_GALLERY:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(pickPhoto, PICK_IMAGE_GALLERY);
+                } else {
+                    //do something like displaying a message that he didn`t allow the app to access gallery and you wont be able to let him select from gallery
+                }
+                break;
+        }
+    }
+
+
 }

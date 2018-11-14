@@ -17,14 +17,13 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
-import com.portablecollections.portablecollections.DeleteCollectableDialogFragment.NoticeDialogListener;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class CollectableDetails extends AppCompatActivity implements NoticeDialogListener {
+public class CollectableDetails extends AppCompatActivity implements DeleteCollectableDialogFragment.NoticeDialogListener {
 
         private static final String TAG = CollectableDetails.class.getName();
 
