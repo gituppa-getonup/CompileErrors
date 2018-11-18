@@ -36,8 +36,6 @@ import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity implements AddCollectableDialogFragment.NoticeDialogListener {
 
-    // todo: when clicking on the picture in details view, prompt to change picture.
-
     private static final String TAG = MainActivity.class.getName();
     private final static int LOADER_COLLECTABLES = 1;
     public final static int TAKE_PHOTO = 1;
@@ -100,18 +98,6 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
             @Override
             public void onClick(View view) {
                 showAddDialog();
-
-
-
-                /*Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                imageFile = pictureHelper.createImageFile(getApplicationContext());
-                if (imageFile != null) {
-                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureHelper.imageUri);
-                }
-                cameraIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivityForResult(cameraIntent, CAMERA_REQUEST);
-                */
-
             }
         });
 
@@ -241,6 +227,9 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
 
     public void showAddDialog() {
         DialogFragment dialog = new AddCollectableDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("source","main");
+        dialog.setArguments(bundle);
         dialog.show(getSupportFragmentManager(), "AddCollectableDialogFragment");
     }
 

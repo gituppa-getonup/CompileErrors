@@ -16,6 +16,7 @@ public class AddCollectableDialogFragment extends DialogFragment {
 
     NoticeDialogListener mListener;
 
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -29,9 +30,20 @@ public class AddCollectableDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Bundle args = getArguments();
+        String source = args.getString("source");
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         final CharSequence[] options = {"Take photo", "Choose from gallery", "Cancel"};
-        builder.setTitle("Select a source")
+        String titleText;
+        if(source == "main") {
+            titleText = "Select a source for the new image:";
+        } else if (source == "details") {
+            titleText = "Replace the image with a new one from:";
+        } else {
+            titleText = "Select a source:";
+        }
+
+        builder.setTitle(titleText)
                 .setItems(options, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int item) {

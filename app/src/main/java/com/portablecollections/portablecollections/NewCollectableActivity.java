@@ -26,7 +26,7 @@ public class NewCollectableActivity extends AppCompatActivity {
     private static final String TAG = NewCollectableActivity.class.getName();
     CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
     private Uri returnUri = null;
-    private String imageUri;
+    private String imageUriString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +40,12 @@ public class NewCollectableActivity extends AppCompatActivity {
             byte[] takenPictureArray = intent.getByteArrayExtra("pictureArray");
             Bitmap takenPicture = BitmapFactory.decodeByteArray(takenPictureArray, 0, takenPictureArray.length);
             newImageView.setImageBitmap(takenPicture);
-            imageUri = Uri.fromFile(pictureHelper.imageFile).toString();
+            imageUriString = Uri.fromFile(pictureHelper.imageFile).toString();
         } else if (intent.hasExtra("picturePath")) {
             String filePath = intent.getStringExtra("picturePath");
             Bitmap chosenPicture = BitmapFactory.decodeFile(filePath);
             newImageView.setImageBitmap(chosenPicture);
-            imageUri = Uri.fromFile(new File(filePath)).toString();
+            imageUriString = Uri.fromFile(new File(filePath)).toString();
         }
 
         Button done = this.findViewById(R.id.new_done);
@@ -58,7 +58,7 @@ public class NewCollectableActivity extends AppCompatActivity {
 
                 contentValues = new ContentValues();
                 contentValues.put("name", newName);
-                contentValues.put("imageUri", imageUri);
+                contentValues.put("imageUri", imageUriString);
 
                 ExecutorService es = Executors.newSingleThreadExecutor();
                 Future future = es.submit(new InsertData());
@@ -73,7 +73,7 @@ public class NewCollectableActivity extends AppCompatActivity {
                 Collectable collectable = new Collectable();
                 collectable.setId(newIdentifier);
                 collectable.setName(newName);
-                collectable.setImageUri(imageUri);
+                collectable.setImageUri(imageUriString);
 
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("collectable", collectable);
