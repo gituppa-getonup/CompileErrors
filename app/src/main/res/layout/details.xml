@@ -18,7 +18,7 @@
         android:scaleType="fitEnd"
         app:srcCompat="@android:drawable/ic_menu_report_image" />
 
-    <EditText
+    <android.support.design.widget.TextInputEditText
         android:id="@+id/textItemName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,9 +28,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_toLeftOf="@+id/detailsImage"
-        android:text="ItemName" />
+        android:hint="Item name" />
 
-    <EditText
+    <android.support.design.widget.TextInputEditText
         android:id="@+id/textCountry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -38,9 +38,9 @@
         android:layout_below="@+id/textItemName"
         android:layout_marginTop="16dp"
         android:layout_toLeftOf="@+id/detailsImage"
-        android:text="Country" />
+        android:hint="Country" />
 
-    <EditText
+    <android.support.design.widget.TextInputEditText
         android:id="@+id/textCity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,7 +48,7 @@
         android:layout_below="@+id/textCountry"
         android:layout_marginTop="16dp"
         android:layout_toLeftOf="@+id/detailsImage"
-        android:text="City" />
+        android:hint="City" />
 
     <CheckBox
         android:id="@+id/checkWantIt"
@@ -70,7 +70,7 @@
         android:layout_toLeftOf="@+id/detailsImage"
         android:text="Got it" />
 
-    <EditText
+    <android.support.design.widget.TextInputEditText
         android:id="@+id/textDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -80,7 +80,7 @@
         android:layout_marginTop="16dp"
         android:ems="10"
         android:inputType="textMultiLine"
-        android:text="Description" />
+        android:hint="Description" />
 
     <Button
         android:id="@+id/details_done"
@@ -98,4 +98,14 @@
         android:layout_alignStart="@+id/textItemName"
         android:layout_alignTop="@+id/details_done"
         android:text="DELETE" />
+
+    <android.support.design.widget.TextInputEditText
+        android:id="@+id/number"
+        android:layout_width="127dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/checkGotIt"
+        android:layout_alignStart="@+id/detailsImage"
+        android:ems="10"
+        android:hint="number"
+        android:inputType="numberDecimal" />
 </RelativeLayout>

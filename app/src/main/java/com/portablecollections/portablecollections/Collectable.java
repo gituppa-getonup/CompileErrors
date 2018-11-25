@@ -20,6 +20,7 @@ public class Collectable implements Parcelable {
     private String imageUri;
     private boolean wantIt;
     private boolean gotIt;
+    private int number;
 
     public Collectable() {
     }
@@ -37,6 +38,7 @@ public class Collectable implements Parcelable {
         out.writeString(imageUri);
         out.writeInt(wantIt ? 1 : 0);
         out.writeInt(gotIt ? 1 : 0);
+        out.writeInt(number);
     }
 
     public static final Parcelable.Creator<Collectable> CREATOR
@@ -58,6 +60,7 @@ public class Collectable implements Parcelable {
         imageUri = in.readString();
         wantIt = in.readInt() == 1;
         gotIt = in.readInt() == 1;
+        number = in.readInt();
     }
 
 
@@ -86,6 +89,9 @@ public class Collectable implements Parcelable {
         }
         if(contentValues.containsKey("gotIt")) {
             collectable.setGotIt(contentValues.getAsBoolean("gotIt"));
+        }
+        if(contentValues.containsKey("number")) {
+            collectable.setNumber(contentValues.getAsInteger("number"));
         }
         return collectable;
     }
@@ -142,5 +148,9 @@ public class Collectable implements Parcelable {
     public boolean getGotIt() { return gotIt; }
 
     public void setGotIt(boolean gotIt) { this.gotIt = gotIt; }
+
+    public int getNumber() { return number; }
+
+    public void setNumber(int number) { this.number = number; }
 
 }

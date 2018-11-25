@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                         case LOADER_COLLECTABLES:
                             return new CursorLoader(getApplicationContext(),
                                     CollectableProvider.URI_COLLECTABLES,
-                                    new String[]{"id", "name", "description", "country", "city", "imageUri", "wantIt", "gotIt"},
+                                    new String[]{"id", "name", "description", "country", "city", "imageUri", "wantIt", "gotIt", "number"},
                                     null,
                                     null,
                                     "name asc"
@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                                 collectable.setImageUri(cursor.getString(cursor.getColumnIndexOrThrow("imageUri")));
                                 collectable.setWantIt(cursor.getInt(cursor.getColumnIndexOrThrow("wantIt")) == 1);
                                 collectable.setGotIt(cursor.getInt(cursor.getColumnIndexOrThrow("gotIt")) == 1);
+                                collectable.setNumber(cursor.getInt(cursor.getColumnIndexOrThrow("number")));
                                 collectableArrayList.add(collectable);
                             }
 

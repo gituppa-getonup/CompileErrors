@@ -66,6 +66,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         EditText textDescription = findViewById(R.id.textDescription);
         Button detailsDoneButton = findViewById(R.id.details_done);
         Button detailsDeleteButton = findViewById(R.id.details_delete);
+        EditText textNumber = findViewById(R.id.number);
 
         // retrieve collectable from intent:
         Intent intent = getIntent();
@@ -87,6 +88,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         checkWantIt.setChecked(collectable.getWantIt());
         checkGotIt.setChecked(collectable.getGotIt());
         textDescription.setText(collectable.getDescription());
+        textNumber.setText(String.valueOf(collectable.getNumber()));
 
 
         detailsImage.setOnClickListener(new View.OnClickListener() {
@@ -247,6 +249,32 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
                                               }
         );
 
+        textNumber.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s == null || s.toString().equalsIgnoreCase("")) {
+                    return;
+                }
+                contentValues.put("number", s.toString());
+                collectable.setNumber(Integer.valueOf(s.toString()));
+                ExecutorService es = Executors.newSingleThreadExecutor();
+                Future future = es.submit(new UpdateData());
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    Log.e(TAG, "something went wrong updating the Room object in a separate thread");
+                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int i, int j, int k) {
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int i, int j, int k) {
+            }
+        });
+
         detailsDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -262,27 +290,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
                                                        showDeleteDialog();
                                                    }
                                                }
-
-
         );
-
-
-        if (textItemName.getText().length() == 0) {
-            textItemName.setText("name");
-        }
-
-        if (textCity.getText().length() == 0) {
-            textCity.setText("city");
-        }
-
-        if (textCountry.getText().length() == 0) {
-            textCountry.setText("country");
-        }
-
-        if (textDescription.getText().length() == 0) {
-            textDescription.setText("description");
-        }
-
 
     }
 
@@ -295,6 +303,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         contentValues.put("city", collectable.getCity());
         contentValues.put("wantIt", collectable.getWantIt());
         contentValues.put("gotIt", collectable.getGotIt());
+        contentValues.put("number", collectable.getNumber());
     }
 
     @Override
