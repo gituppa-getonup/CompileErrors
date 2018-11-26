@@ -2,6 +2,9 @@ package com.portablecollections.portablecollections;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.SearchManager;
+import android.arch.persistence.db.SimpleSQLiteQuery;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -20,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -47,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
     private boolean emptyDb = true;
     private RecyclerView recycler;
     private int adapterPosition = -1;
+    private String query;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +106,47 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
             }
         });
 
+
+        Intent intent = getIntent();
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String searchString = intent.getStringExtra(SearchManager.QUERY);
+            if (searchString != null) {
+                String[] searchArgs = {" %" + searchString + "%"};
+                query = "";
+                query += "SELECT * FROM collectables";
+                query += " WHERE name LIKE";
+                query += searchArgs;
+                query += " OR WHERE description LIKE";
+                query += searchArgs;
+                query += ";";
+
+
+                ExecutorService esSearch = Executors.newSingleThreadExecutor();
+                Future futureSearch = esSearch.submit(new QuerySearch());
+
+            }
+        }
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = findViewById(R.id.searchView);
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+
+        FloatingActionButton searchButton = findViewById(R.id.searchButton);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SearchView searchView = findViewById(R.id.searchView);
+                int vis = searchView.getVisibility();
+                if (vis == View.GONE) {
+                    searchView.setVisibility(View.VISIBLE);
+                } else {
+                    searchView.setVisibility(View.GONE);
+                }
+            }
+        });
+
+
     }
 
     @Override
@@ -117,7 +163,6 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
     }
 
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent takePictureIntent) {
         if (takePictureIntent == null || resultCode != Activity.RESULT_OK) {
@@ -126,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
 
         Intent intent = new Intent(this, NewCollectableActivity.class);
 
-        switch(requestCode) {
+        switch (requestCode) {
             case TAKE_PHOTO:
                 try {
                     Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
@@ -226,10 +271,37 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
         }
     }
 
+    private class QuerySearch implements Runnable {
+        @Override
+        public void run() {
+            CollectableDao collectableDao = CollectableDatabase.getInstance(getApplicationContext()).collectableDao();
+            Cursor cursor = collectableDao.selectDynamically(new SimpleSQLiteQuery(query));
+            List<Collectable> collectableArrayList = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                Collectable collectable = new Collectable();
+                collectable.setId(Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow("id"))));
+                collectable.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                collectable.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+                collectable.setCountry(cursor.getString(cursor.getColumnIndexOrThrow("country")));
+                collectable.setCity(cursor.getString(cursor.getColumnIndexOrThrow("city")));
+                collectable.setImageUri(cursor.getString(cursor.getColumnIndexOrThrow("imageUri")));
+                collectable.setWantIt(cursor.getInt(cursor.getColumnIndexOrThrow("wantIt")) == 1);
+                collectable.setGotIt(cursor.getInt(cursor.getColumnIndexOrThrow("gotIt")) == 1);
+                collectable.setNumber(cursor.getInt(cursor.getColumnIndexOrThrow("number")));
+                collectableArrayList.add(collectable);
+            }
+
+            collectableAdapter.clear();
+            collectableAdapter.addAll(collectableArrayList);
+            cursor.close();
+        }
+    }
+
+
     public void showAddDialog() {
         DialogFragment dialog = new AddCollectableDialogFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("source","main");
+        bundle.putString("source", "main");
         dialog.setArguments(bundle);
         dialog.show(getSupportFragmentManager(), "AddCollectableDialogFragment");
     }
@@ -261,8 +333,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults)
-    {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case PICK_IMAGE_GALLERY:
                 // If request is cancelled, the result arrays are empty.

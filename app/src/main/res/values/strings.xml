@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PortableCollections</string>
+    <string name="app_label">Portable Collections</string>
+    <string name="search_hint">Search collectables</string>
 </resources>
