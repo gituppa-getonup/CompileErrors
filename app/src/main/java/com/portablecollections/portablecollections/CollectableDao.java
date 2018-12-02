@@ -75,7 +75,7 @@ public interface CollectableDao {
     @Update
     int update(Collectable collectable);
 
-    @RawQuery
-    Cursor selectDynamically(SupportSQLiteQuery query);
+    @Query("SELECT id, name, description, country, city, imageUri, wantIt, gotIt, number FROM collectables WHERE name = :searchArgs")
+    Cursor selectDynamically(String[] searchArgs);
 
 }

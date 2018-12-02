@@ -38,7 +38,13 @@ public class CollectableProvider extends ContentProvider {
             CollectableDao collectableDao = CollectableDatabase.getInstance(context).collectableDao();
             final Cursor cursor;
             if (code == 1) {
-                cursor = collectableDao.selectAll();
+                if(selectionArgs == null) {
+                    cursor = collectableDao.selectAll();
+                    context.getContentResolver().notifyChange(uri, null);
+                } else {
+                    cursor = collectableDao.selectDynamically(selectionArgs);
+                    context.getContentResolver().notifyChange(uri, null);
+                }
             } else {
                 cursor = collectableDao.selectById(ContentUris.parseId(uri));
             }

@@ -111,19 +111,9 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String searchString = intent.getStringExtra(SearchManager.QUERY);
             if (searchString != null) {
-                String[] searchArgs = {" %" + searchString + "%"};
-                query = "";
-                query += "SELECT * FROM collectables";
-                query += " WHERE name LIKE";
-                query += searchArgs;
-                query += " OR WHERE description LIKE";
-                query += searchArgs;
-                query += ";";
-
-
-                ExecutorService esSearch = Executors.newSingleThreadExecutor();
-                Future futureSearch = esSearch.submit(new QuerySearch());
-
+                String searchArgs = " \"%" + searchString + "%\"";
+                query = searchString;
+                getSupportLoaderManager().restartLoader(1, null, loaderSearchCallback);
             }
         }
 
@@ -250,6 +240,66 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                     }
                 }
 
+                @Override
+                public void onLoaderReset(Loader<Cursor> loader) {
+                    switch (loader.getId()) {
+                        case LOADER_COLLECTABLES:
+                            collectableAdapter.clear();
+                            break;
+                    }
+                }
+            };
+
+    private LoaderManager.LoaderCallbacks<Cursor> loaderSearchCallback =
+            new LoaderManager.LoaderCallbacks<Cursor>() {
+                @Override
+                public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                    switch (id) {
+                        case LOADER_COLLECTABLES:
+                            return new CursorLoader(getApplicationContext(),
+                                    CollectableProvider.URI_COLLECTABLES,
+                                    new String[]{"id", "name", "description", "country", "city", "imageUri", "wantIt", "gotIt", "number"},
+                                    "where name = ?",
+                                    new String[] {query},
+                                    "name asc"
+                            );
+                        default:
+                            Log.e(TAG, "loaderSearchCallback");
+                            throw new IllegalArgumentException();
+                    }
+                }
+
+                @Override
+                public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+                    switch (loader.getId()) {
+                        case LOADER_COLLECTABLES:
+                            List<Collectable> collectableArrayList = new ArrayList<>();
+                            while (cursor.moveToNext()) {
+                                Collectable collectable = new Collectable();
+                                collectable.setId(Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow("id"))));
+                                collectable.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                                collectable.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+                                collectable.setCountry(cursor.getString(cursor.getColumnIndexOrThrow("country")));
+                                collectable.setCity(cursor.getString(cursor.getColumnIndexOrThrow("city")));
+                                collectable.setImageUri(cursor.getString(cursor.getColumnIndexOrThrow("imageUri")));
+                                collectable.setWantIt(cursor.getInt(cursor.getColumnIndexOrThrow("wantIt")) == 1);
+                                collectable.setGotIt(cursor.getInt(cursor.getColumnIndexOrThrow("gotIt")) == 1);
+                                collectable.setNumber(cursor.getInt(cursor.getColumnIndexOrThrow("number")));
+                                collectableArrayList.add(collectable);
+                            }
+
+                            collectableAdapter.clear();
+                            collectableAdapter.addAll(collectableArrayList);
+
+                            Intent intent = getIntent();
+                            if (intent.hasExtra("collectable")) {
+                                Collectable collectable = intent.getParcelableExtra("collectable");
+                                adapterPosition = collectableAdapter.add(collectable);
+                                recycler.scrollToPosition(adapterPosition);
+                            }
+                    }
+                }
+
 
                 @Override
                 public void onLoaderReset(Loader<Cursor> loader) {
@@ -261,7 +311,6 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                 }
             };
 
-
     private class QueryCount implements Runnable {
         @Override
         public void run() {
@@ -270,33 +319,6 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
             emptyDb = count == 0;
         }
     }
-
-    private class QuerySearch implements Runnable {
-        @Override
-        public void run() {
-            CollectableDao collectableDao = CollectableDatabase.getInstance(getApplicationContext()).collectableDao();
-            Cursor cursor = collectableDao.selectDynamically(new SimpleSQLiteQuery(query));
-            List<Collectable> collectableArrayList = new ArrayList<>();
-            while (cursor.moveToNext()) {
-                Collectable collectable = new Collectable();
-                collectable.setId(Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow("id"))));
-                collectable.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
-                collectable.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
-                collectable.setCountry(cursor.getString(cursor.getColumnIndexOrThrow("country")));
-                collectable.setCity(cursor.getString(cursor.getColumnIndexOrThrow("city")));
-                collectable.setImageUri(cursor.getString(cursor.getColumnIndexOrThrow("imageUri")));
-                collectable.setWantIt(cursor.getInt(cursor.getColumnIndexOrThrow("wantIt")) == 1);
-                collectable.setGotIt(cursor.getInt(cursor.getColumnIndexOrThrow("gotIt")) == 1);
-                collectable.setNumber(cursor.getInt(cursor.getColumnIndexOrThrow("number")));
-                collectableArrayList.add(collectable);
-            }
-
-            collectableAdapter.clear();
-            collectableAdapter.addAll(collectableArrayList);
-            cursor.close();
-        }
-    }
-
 
     public void showAddDialog() {
         DialogFragment dialog = new AddCollectableDialogFragment();
