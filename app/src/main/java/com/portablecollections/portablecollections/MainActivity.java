@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
         collectableAdapter = CollectableAdapter.getCollectableAdapter(this);
 
         recycler.setAdapter(collectableAdapter);
-        getSupportLoaderManager().initLoader(1, null, mLoaderCallbacks);
+        getSupportLoaderManager().initLoader(LOADER_COLLECTABLES, null, loaderCallback);
 
         ExecutorService es = Executors.newSingleThreadExecutor();
         Future future = es.submit(new QueryCount());
@@ -111,9 +111,9 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String searchString = intent.getStringExtra(SearchManager.QUERY);
             if (searchString != null) {
-                String searchArgs = " \"%" + searchString + "%\"";
-                query = searchString;
-                getSupportLoaderManager().restartLoader(1, null, loaderSearchCallback);
+                String searchArgs = "%" + searchString + "%";
+                query = searchArgs;
+                getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderSearchCallback);
             }
         }
 
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
         startActivity(intent);
     }
 
-    private LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks =
+    private LoaderManager.LoaderCallbacks<Cursor> loaderCallback =
             new LoaderManager.LoaderCallbacks<Cursor>() {
                 @Override
                 public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                                     "name asc"
                             );
                         default:
-                            Log.e(TAG, "mLoaderCallbacks");
+                            Log.e(TAG, "loaderCallback");
                             throw new IllegalArgumentException();
                     }
                 }
@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                             return new CursorLoader(getApplicationContext(),
                                     CollectableProvider.URI_COLLECTABLES,
                                     new String[]{"id", "name", "description", "country", "city", "imageUri", "wantIt", "gotIt", "number"},
-                                    "where name = ?",
+                                    "name LIKE ? OR description LIKE ?",
                                     new String[] {query},
                                     "name asc"
                             );

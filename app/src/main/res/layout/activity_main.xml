@@ -55,6 +55,8 @@
 
     <android.support.v7.widget.SearchView
         android:id="@+id/searchView"
+        app:layout_anchor="@id/searchButton"
+        app:layout_anchorGravity="left|center_vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"

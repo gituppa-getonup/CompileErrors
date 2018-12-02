@@ -40,10 +40,8 @@ public class CollectableProvider extends ContentProvider {
             if (code == 1) {
                 if(selectionArgs == null) {
                     cursor = collectableDao.selectAll();
-                    context.getContentResolver().notifyChange(uri, null);
                 } else {
                     cursor = collectableDao.selectDynamically(selectionArgs);
-                    context.getContentResolver().notifyChange(uri, null);
                 }
             } else {
                 cursor = collectableDao.selectById(ContentUris.parseId(uri));
