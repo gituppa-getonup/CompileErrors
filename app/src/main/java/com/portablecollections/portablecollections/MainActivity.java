@@ -40,14 +40,16 @@ import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity implements AddCollectableDialogFragment.NoticeDialogListener {
 
-    private static final String TAG = MainActivity.class.getName();
+    // todo: after collapse of searchView, the image is not restored to its original size
+    // todo: hide the details button if the search has no results
+    // todo: after completing a search, store the search string in the searchView
+
+    private final static String TAG = MainActivity.class.getName();
     private final static int LOADER_COLLECTABLES = 1;
-    public final static int TAKE_PHOTO = 1;
-    public final static int PICK_IMAGE_GALLERY = 2;
-    private Bitmap takenPicture;
+    private final static int TAKE_PHOTO = 1;
+    private final static int PICK_IMAGE_GALLERY = 2;
     private CollectableAdapter collectableAdapter;
-    private File imageFile;
-    CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
+    private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
     private boolean emptyDb = true;
     private RecyclerView recycler;
     private int adapterPosition = -1;
@@ -107,19 +109,51 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
         });
 
 
-        Intent intent = getIntent();
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String searchString = intent.getStringExtra(SearchManager.QUERY);
-            if (searchString != null) {
-                String searchArgs = "%" + searchString + "%";
-                query = searchArgs;
-                getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderSearchCallback);
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        final SearchView searchView = findViewById(R.id.searchView);
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setSubmitButtonEnabled(true);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String submitString) {
+                return true;
             }
+
+            @Override
+            public boolean onQueryTextChange(String changedText) {
+                    if(changedText.length()==0) {
+                        getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderCallback);
+                    } else {
+                        query = "%" + changedText + "%";
+                        getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderSearchCallback);
+                    }
+                return true;
+            }
+        });
+
+        Intent intent = getIntent();
+        if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String searchString = intent.getStringExtra(SearchManager.QUERY);
+            query = "%" + searchString + "%";
+            getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderSearchCallback);
         }
 
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = findViewById(R.id.searchView);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchManager.setOnDismissListener(new SearchManager.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                Log.i(TAG, "dismissed");
+            }
+        });
+
+        searchManager.setOnCancelListener(new SearchManager.OnCancelListener() {
+            @Override
+            public void onCancel() {
+                Log.i(TAG, "cancelled");
+            }
+        });
 
 
         FloatingActionButton searchButton = findViewById(R.id.searchButton);
@@ -135,7 +169,6 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                 }
             }
         });
-
 
     }
 
@@ -165,14 +198,12 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
             case TAKE_PHOTO:
                 try {
                     Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
-                    takenPicture = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                    Bitmap takenPicture = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                    byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(takenPicture);
+                    intent.putExtra("pictureArray", takenPictureArray);
                 } catch (IOException e) {
                     Log.e(TAG, "Unable to read the bitmap of the taken picture");
                 }
-
-                byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(takenPicture);
-                intent.putExtra("pictureArray", takenPictureArray);
-
                 break;
 
             case PICK_IMAGE_GALLERY:
@@ -260,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                                     CollectableProvider.URI_COLLECTABLES,
                                     new String[]{"id", "name", "description", "country", "city", "imageUri", "wantIt", "gotIt", "number"},
                                     "name LIKE ? OR description LIKE ?",
-                                    new String[] {query},
+                                    new String[]{query},
                                     "name asc"
                             );
                         default:
@@ -331,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
     @Override
     public void onDialogTakePhotoClick(DialogFragment dialog) {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        imageFile = pictureHelper.createImageFile(getApplicationContext());
+        File imageFile = pictureHelper.createImageFile(getApplicationContext());
         if (imageFile != null) {
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureHelper.imageUri);
         }

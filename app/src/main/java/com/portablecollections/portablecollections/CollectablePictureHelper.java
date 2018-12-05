@@ -19,7 +19,7 @@ import java.util.Locale;
 public class CollectablePictureHelper extends FileProvider {
 
     private static CollectablePictureHelper collectablePictureHelper;
-    private static final String TAG = CollectablePictureHelper.class.getPackage().getName();
+    private final static String TAG = CollectablePictureHelper.class.getPackage().getName();
     File imageFile;
     String imageFilePath;
     Uri imageUri;
