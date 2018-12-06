@@ -40,10 +40,6 @@ import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity implements AddCollectableDialogFragment.NoticeDialogListener {
 
-    // todo: after collapse of searchView, the image is not restored to its original size
-    // todo: hide the details button if the search has no results
-    // todo: after completing a search, store the search string in the searchView
-
     private final static String TAG = MainActivity.class.getName();
     private final static int LOADER_COLLECTABLES = 1;
     private final static int TAKE_PHOTO = 1;
@@ -54,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
     private RecyclerView recycler;
     private int adapterPosition = -1;
     private String query;
+    private String searchString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
 
             @Override
             public boolean onQueryTextSubmit(String submitString) {
+                searchString = submitString;
                 return true;
             }
 
@@ -130,31 +128,17 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                         query = "%" + changedText + "%";
                         getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderSearchCallback);
                     }
+                    searchString = changedText;
                 return true;
             }
         });
 
         Intent intent = getIntent();
         if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String searchString = intent.getStringExtra(SearchManager.QUERY);
+            searchString = intent.getStringExtra(SearchManager.QUERY);
             query = "%" + searchString + "%";
             getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderSearchCallback);
         }
-
-        searchManager.setOnDismissListener(new SearchManager.OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                Log.i(TAG, "dismissed");
-            }
-        });
-
-        searchManager.setOnCancelListener(new SearchManager.OnCancelListener() {
-            @Override
-            public void onCancel() {
-                Log.i(TAG, "cancelled");
-            }
-        });
-
 
         FloatingActionButton searchButton = findViewById(R.id.searchButton);
         searchButton.setOnClickListener(new View.OnClickListener() {
@@ -164,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                 int vis = searchView.getVisibility();
                 if (vis == View.GONE) {
                     searchView.setVisibility(View.VISIBLE);
+                    searchView.setQuery(searchString, false);
                 } else {
                     searchView.setVisibility(View.GONE);
                 }
@@ -245,6 +230,11 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                     switch (loader.getId()) {
                         case LOADER_COLLECTABLES:
                             List<Collectable> collectableArrayList = new ArrayList<>();
+
+                            if(cursor.getCount() != 0) {
+                                findViewById(R.id.details).setVisibility(View.VISIBLE);
+                            }
+
                             while (cursor.moveToNext()) {
                                 Collectable collectable = new Collectable();
                                 collectable.setId(Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow("id"))));
@@ -305,6 +295,13 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                     switch (loader.getId()) {
                         case LOADER_COLLECTABLES:
                             List<Collectable> collectableArrayList = new ArrayList<>();
+
+                            if(cursor.getCount() == 0) {
+                                findViewById(R.id.details).setVisibility(View.INVISIBLE);
+                                Toast.makeText(MainActivity.this, "Nothing found with this search"
+                                        , Toast.LENGTH_LONG).show();
+                            }
+
                             while (cursor.moveToNext()) {
                                 Collectable collectable = new Collectable();
                                 collectable.setId(Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow("id"))));
