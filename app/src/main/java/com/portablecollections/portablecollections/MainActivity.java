@@ -1,14 +1,11 @@
 package com.portablecollections.portablecollections;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.SearchManager;
-import android.arch.persistence.db.SimpleSQLiteQuery;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -29,8 +26,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -122,19 +117,19 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
 
             @Override
             public boolean onQueryTextChange(String changedText) {
-                    if(changedText.length()==0) {
-                        getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderCallback);
-                    } else {
-                        query = "%" + changedText + "%";
-                        getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderSearchCallback);
-                    }
-                    searchString = changedText;
+                if (changedText.length() == 0) {
+                    getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderCallback);
+                } else {
+                    query = "%" + changedText + "%";
+                    getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderSearchCallback);
+                }
+                searchString = changedText;
                 return true;
             }
         });
 
         Intent intent = getIntent();
-        if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             searchString = intent.getStringExtra(SearchManager.QUERY);
             query = "%" + searchString + "%";
             getSupportLoaderManager().restartLoader(LOADER_COLLECTABLES, null, loaderSearchCallback);
@@ -173,35 +168,18 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent takePictureIntent) {
-        if (takePictureIntent == null || resultCode != Activity.RESULT_OK) {
+        if (resultCode != RESULT_OK) {
             return;
         }
 
         Intent intent = new Intent(this, NewCollectableActivity.class);
-
-        switch (requestCode) {
-            case TAKE_PHOTO:
-                try {
-                    Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
-                    Bitmap takenPicture = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                    byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(takenPicture);
-                    intent.putExtra("pictureArray", takenPictureArray);
-                } catch (IOException e) {
-                    Log.e(TAG, "Unable to read the bitmap of the taken picture");
-                }
-                break;
-
-            case PICK_IMAGE_GALLERY:
-                Uri imageUri = takePictureIntent.getData();
-                String[] filePathColumn = {MediaStore.Images.Media.DATA};
-                Cursor cursor = getContentResolver().query(imageUri
-                        , filePathColumn, null, null, null);
-                cursor.moveToFirst();
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                String picturePath = cursor.getString(columnIndex);
-                cursor.close();
-                intent.putExtra("picturePath", picturePath);
-                break;
+        if (requestCode == TAKE_PHOTO) {
+            String imageFilePath = pictureHelper.imageFilePath;
+            intent.putExtra("takenPictureFilePath", imageFilePath);
+        } else if (requestCode == PICK_IMAGE_GALLERY) {
+            Uri imageUri = takePictureIntent.getData();
+            String chosenPictureUri = imageUri.toString();
+            intent.putExtra("chosenPictureUri", chosenPictureUri);
         }
         startActivity(intent);
     }
@@ -231,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                         case LOADER_COLLECTABLES:
                             List<Collectable> collectableArrayList = new ArrayList<>();
 
-                            if(cursor.getCount() != 0) {
+                            if (cursor.getCount() != 0) {
                                 findViewById(R.id.details).setVisibility(View.VISIBLE);
                             }
 
@@ -296,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                         case LOADER_COLLECTABLES:
                             List<Collectable> collectableArrayList = new ArrayList<>();
 
-                            if(cursor.getCount() == 0) {
+                            if (cursor.getCount() == 0) {
                                 findViewById(R.id.details).setVisibility(View.INVISIBLE);
                                 Toast.makeText(MainActivity.this, "Nothing found with this search"
                                         , Toast.LENGTH_LONG).show();
@@ -359,10 +337,8 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
     @Override
     public void onDialogTakePhotoClick(DialogFragment dialog) {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        File imageFile = pictureHelper.createImageFile(getApplicationContext());
-        if (imageFile != null) {
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureHelper.imageUri);
-        }
+        Uri imageUri = pictureHelper.createImageFile(getApplicationContext());
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         cameraIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivityForResult(cameraIntent, TAKE_PHOTO);
     }

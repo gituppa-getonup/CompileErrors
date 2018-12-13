@@ -43,8 +43,6 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
     private int adapterPosition = -1;
     public final static int TAKE_PHOTO = 1;
     public final static int PICK_IMAGE_GALLERY = 2;
-    private File imageFile;
-    ImageView detailsImage;
     private String imageUriString;
 
     Uri uri;
@@ -57,7 +55,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         setContentView(R.layout.details);
 
         // define the views:
-        detailsImage = findViewById(R.id.detailsImage);
+        ImageView detailsImage = findViewById(R.id.detailsImage);
         EditText textItemName = findViewById(R.id.textItemName);
         EditText textCountry = findViewById(R.id.textCountry);
         EditText textCity = findViewById(R.id.textCity);
@@ -81,6 +79,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         // fill the views:
         detailsBitmap = pictureHelper.getBitmapFromString(collectable.getImageUri());
         detailsImage.setImageBitmap(detailsBitmap);
+        //detailsBitmap.recycle();
 
         textItemName.setText(collectable.getName());
         textCountry.setText(collectable.getCountry());
@@ -329,19 +328,26 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
             return;
         }
 
+        ImageView detailsImage = findViewById(R.id.detailsImage);
+
         switch(requestCode) {
             case TAKE_PHOTO:
                 try {
                     Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
+                    imageUriString = imageUri.toString();
                     detailsBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
                 } catch (IOException e) {
                     Log.e(TAG, "Unable to read the bitmap of the taken picture");
                 }
 
                 byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(detailsBitmap);
-                Bitmap takenPicture = BitmapFactory.decodeByteArray(takenPictureArray, 0, takenPictureArray.length);
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                Bitmap takenPicture = BitmapFactory.decodeByteArray(takenPictureArray, 0, takenPictureArray.length, options);
+                int imageWidth = options.outWidth;
+                int imageHeight = options.outHeight;
+                int inSampleSize = 1;
                 detailsImage.setImageBitmap(takenPicture);
-                imageUriString = Uri.fromFile(pictureHelper.imageFile).toString();
                 break;
 
             case PICK_IMAGE_GALLERY:
@@ -356,7 +362,6 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
                 Bitmap chosenPicture = BitmapFactory.decodeFile(picturePath);
                 detailsImage.setImageBitmap(chosenPicture);
                 imageUriString = Uri.fromFile(new File(picturePath)).toString();
-                //intent.putExtra("picturePath", picturePath);
                 break;
         }
         contentValues.put("imageUri", imageUriString);
@@ -369,9 +374,9 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
             Log.e(TAG, "something went wrong updating the Room object in a separate thread");
         }
 
+
+
     }
-
-
 
     public void showAddDialog() {
         DialogFragment dialog = new AddCollectableDialogFragment();
@@ -384,10 +389,8 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
     @Override
     public void onDialogTakePhotoClick(DialogFragment dialog) {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        imageFile = pictureHelper.createImageFile(getApplicationContext());
-        if (imageFile != null) {
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pictureHelper.imageUri);
-        }
+        Uri imageUri = pictureHelper.createImageFile(getApplicationContext());
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         cameraIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivityForResult(cameraIntent, TAKE_PHOTO);
     }
@@ -439,7 +442,6 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         }
         Intent backToMainActivity = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(backToMainActivity);
-
     }
 
     @Override
