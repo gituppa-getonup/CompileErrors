@@ -77,7 +77,14 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         fillContentValues();
 
         // fill the views:
-        detailsBitmap = pictureHelper.getBitmapFromString(collectable.getImageUri());
+        imageUriString = collectable.getImageUri();
+        Uri imageUri = Uri.parse(imageUriString);
+        String pathName = imageUri.getPath();
+        Bitmap detailsBitmap = pictureHelper.decodeSampledBitmapFromFile(pathName, imageUriString, 150, 194);
+
+        //detailsBitmap = pictureHelper.getBitmapFromString(collectable.getImageUri());
+
+
         detailsImage.setImageBitmap(detailsBitmap);
         //detailsBitmap.recycle();
 
@@ -324,14 +331,14 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent takePictureIntent) {
-        if (takePictureIntent == null || resultCode != Activity.RESULT_OK) {
+        if (resultCode != Activity.RESULT_OK) {
             return;
         }
 
         ImageView detailsImage = findViewById(R.id.detailsImage);
 
         switch(requestCode) {
-            case TAKE_PHOTO:
+            /*case TAKE_PHOTO:
                 try {
                     Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
                     imageUriString = imageUri.toString();
@@ -341,17 +348,19 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
                 }
 
                 byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(detailsBitmap);
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-                Bitmap takenPicture = BitmapFactory.decodeByteArray(takenPictureArray, 0, takenPictureArray.length, options);
-                int imageWidth = options.outWidth;
-                int imageHeight = options.outHeight;
-                int inSampleSize = 1;
-                detailsImage.setImageBitmap(takenPicture);
+                //Bitmap takenPicture = BitmapFactory.decodeByteArray(takenPictureArray, 0, takenPictureArray.length, options);
+                detailsImage.setImageBitmap(pictureHelper.decodeSampledBitmapFromByteArray(takenPictureArray, imageUriString,150,194));
+                break;*/
+
+            case TAKE_PHOTO:
+                Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
+                    imageUriString = imageUri.toString();
+                    String pathName = imageUri.getPath();
+                detailsImage.setImageBitmap(pictureHelper.decodeSampledBitmapFromFile(pathName, imageUriString, 150, 194));
                 break;
 
             case PICK_IMAGE_GALLERY:
-                Uri imageUri = takePictureIntent.getData();
+                imageUri = takePictureIntent.getData();
                 String[] filePathColumn = {MediaStore.Images.Media.DATA};
                 Cursor cursor = getContentResolver().query(imageUri
                         , filePathColumn, null, null, null);
@@ -359,9 +368,8 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 String picturePath = cursor.getString(columnIndex);
                 cursor.close();
-                Bitmap chosenPicture = BitmapFactory.decodeFile(picturePath);
-                detailsImage.setImageBitmap(chosenPicture);
                 imageUriString = Uri.fromFile(new File(picturePath)).toString();
+                detailsImage.setImageBitmap(pictureHelper.decodeSampledBitmapFromFile(picturePath, imageUriString,150, 194));
                 break;
         }
         contentValues.put("imageUri", imageUriString);

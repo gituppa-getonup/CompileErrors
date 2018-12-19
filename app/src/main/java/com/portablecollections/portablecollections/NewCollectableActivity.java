@@ -5,11 +5,13 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,6 +29,7 @@ public class NewCollectableActivity extends AppCompatActivity {
     private EditText newNameText;
     private ContentValues contentValues;
     private static final String TAG = NewCollectableActivity.class.getName();
+    private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
     private Uri returnUri = null;
     private String imageUriString;
 
@@ -40,20 +43,26 @@ public class NewCollectableActivity extends AppCompatActivity {
         final Intent intent = getIntent();
 
         if (intent.hasExtra("takenPictureFilePath")) {
-            Uri imageUri = Uri.parse(intent.getStringExtra("takenPictureFilePath"));
-            Bitmap takenPicture;
-            try {
-                takenPicture = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                newImageView.setImageBitmap(takenPicture);
-                imageUriString = imageUri.toString();
-            } catch (IOException e) {
-                Log.e(TAG, "getBitmap failed: " + e);
-            }
+            imageUriString = intent.getStringExtra("takenPictureFilePath");
+            Uri imageUri = Uri.parse(imageUriString);
+            String pathName = imageUri.getPath();
+            Bitmap takenPicture = pictureHelper.decodeSampledBitmapFromFile(pathName, imageUriString, 150, 194);
+            newImageView.setImageBitmap(takenPicture);
 
-
+            //Bitmap takenPicture = pictureHelper.getBitmapFromString(imageUriString);
+            //newImageView.setImageBitmap(takenPicture);
         } else if (intent.hasExtra("chosenPictureUri")) {
             imageUriString = intent.getStringExtra("chosenPictureUri");
+
+
+
+
+
             Uri imageUri = Uri.parse(imageUriString);
+            //String pathName = imageUri.getPath();
+            //String picturePath = pictureHelper.getFilePathStringFromUri(imageUri);
+            //String picturePath = imageUri.getPath();
+
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
             Cursor cursor = getContentResolver().query(imageUri
@@ -62,11 +71,24 @@ public class NewCollectableActivity extends AppCompatActivity {
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             String picturePath = cursor.getString(columnIndex);
             cursor.close();
-
-            Bitmap chosenPicture = BitmapFactory.decodeFile(picturePath);
-
-            newImageView.setImageBitmap(chosenPicture);
             imageUriString = Uri.fromFile(new File(picturePath)).toString();
+
+            Bitmap chosenPicture = pictureHelper.decodeSampledBitmapFromFile(picturePath, imageUriString, 150, 194);
+            newImageView.setImageBitmap(chosenPicture);
+
+
+            /*
+            Display display = getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int width = size.x;
+            int height = size.y;
+            */
+
+            //newImageView.setImageBitmap(pictureHelper.decodeSampledBitmapFromFile(picturePath, width, height));
+
+            //Bitmap chosenPicture = BitmapFactory.decodeFile(picturePath);
+            //newImageView.setImageBitmap(chosenPicture);
         }
 
         Button done = this.findViewById(R.id.new_done);

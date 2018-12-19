@@ -2,12 +2,16 @@ package com.portablecollections.portablecollections;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import java.util.List;
@@ -19,6 +23,7 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
     private SortedList<Collectable> sortedList;
     static CollectableAdapter collectableAdapter;
     private Context context;
+    private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(context);
 
     public static CollectableAdapter getCollectableAdapter(Context context) {
         if (collectableAdapter == null) {
@@ -111,7 +116,6 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
         sortedList.endBatchedUpdates();
     }
 
-    CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(context);
 
     @NonNull
     @Override
@@ -124,8 +128,22 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
         Collectable collectable = sortedList.get(position);
 
         String imageUriString = collectable.getImageUri();
-        Bitmap bitmap = pictureHelper.getBitmapFromString(imageUriString);
-        holder.mView.setImageBitmap(bitmap);
+        Uri imageUri = Uri.parse(imageUriString);
+        String filePathString = imageUri.getPath();
+        //String filePathString = pictureHelper.getFilePathStringFromUri(Uri.parse(imageUriString));
+
+
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        holder.mView.setImageBitmap(pictureHelper.decodeSampledBitmapFromFile(filePathString, imageUriString, width, height));
+
+        //Bitmap bitmap = pictureHelper.getBitmapFromString(imageUriString);
+        //holder.mView.setImageBitmap(bitmap);
 
         String nameString = collectable.getName();
         holder.mText.setText(nameString);
