@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                             return new CursorLoader(getApplicationContext(),
                                     CollectableProvider.URI_COLLECTABLES,
                                     new String[]{"id", "name", "description", "country", "city", "imageUri", "wantIt", "gotIt", "number"},
-                                    "name LIKE ? OR description LIKE ?",
+                                    "name LIKE ? OR description LIKE ? OR country LIKE ? OR city LIKE ?",
                                     new String[]{query},
                                     "name asc"
                             );
@@ -297,12 +297,6 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                             collectableAdapter.clear();
                             collectableAdapter.addAll(collectableArrayList);
 
-                            Intent intent = getIntent();
-                            if (intent.hasExtra("collectable")) {
-                                Collectable collectable = intent.getParcelableExtra("collectable");
-                                adapterPosition = collectableAdapter.add(collectable);
-                                recycler.scrollToPosition(adapterPosition);
-                            }
                     }
                 }
 

@@ -72,7 +72,9 @@ public interface CollectableDao {
     int update(Collectable collectable);
 
     @Query("SELECT id, name, description, country, city, imageUri, wantIt, gotIt, number FROM collectables WHERE name LIKE :searchArgs"
-            + " OR description LIKE :searchArgs")
+            + " OR description LIKE :searchArgs"
+            + " OR country LIKE :searchArgs"
+            + " OR city LIKE :searchArgs")
     Cursor selectDynamically(String[] searchArgs);
 
 }

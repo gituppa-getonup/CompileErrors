@@ -6,12 +6,15 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -27,6 +30,8 @@ public class CollectablePictureHelper extends FileProvider {
     String imageFilePath;
     Uri imageUri;
     Context context;
+    int width;
+    int height;
 
     static CollectablePictureHelper getCollectablePictureHelper(Context context) {
         if (collectablePictureHelper == null) {
@@ -39,21 +44,13 @@ public class CollectablePictureHelper extends FileProvider {
         this.context = context;
     }
 
-    byte[] getByteArrayFromBitmap(Bitmap takenPicture) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        takenPicture.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        return stream.toByteArray();
-    }
-
-    Bitmap getBitmapFromString(String imageUriString) {
-        Bitmap imageBitmap = null;
-        Uri imageUri = Uri.parse(imageUriString);
-        try {
-            imageBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
-        } catch (IOException e) {
-            Log.e(TAG, "IOException while converting string to uri to bitmap");
-        }
-        return imageBitmap;
+    public void setWidthHeight() {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        width = size.x;
+        height = size.y;
     }
 
     Uri createImageFile(Context context) {
@@ -77,44 +74,6 @@ public class CollectablePictureHelper extends FileProvider {
         return imageUri;
 
     }
-
-    /*public static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) >= reqHeight
-                    && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-
-        return inSampleSize;
-    }
-    */
-
-    public String getFilePathStringFromUri(Uri uri) {
-        String[] filePathColumn = {MediaStore.Images.Media.DATA};
-
-        Cursor cursor = context.getContentResolver().query(imageUri
-                , filePathColumn, null, null, null);
-        cursor.moveToFirst();
-        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-        String filePathString = cursor.getString(columnIndex);
-        cursor.close();
-
-        return filePathString;
-    }
-
 
     public static Bitmap decodeSampledBitmapFromFile(String pathName, String imageUriString, int reqWidth, int reqHeight) {
 
@@ -179,6 +138,5 @@ public class CollectablePictureHelper extends FileProvider {
         img.recycle();
         return rotatedImg;
     }
-
 
 }

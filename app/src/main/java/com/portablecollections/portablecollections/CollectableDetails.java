@@ -37,14 +37,12 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
 
     private static final String TAG = CollectableDetails.class.getName();
 
-    Bitmap detailsBitmap;
     private Collectable collectable;
     private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
     private int adapterPosition = -1;
     public final static int TAKE_PHOTO = 1;
     public final static int PICK_IMAGE_GALLERY = 2;
     private String imageUriString;
-
     Uri uri;
 
     final ContentValues contentValues = new ContentValues();
@@ -81,12 +79,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         Uri imageUri = Uri.parse(imageUriString);
         String pathName = imageUri.getPath();
         Bitmap detailsBitmap = pictureHelper.decodeSampledBitmapFromFile(pathName, imageUriString, 150, 194);
-
-        //detailsBitmap = pictureHelper.getBitmapFromString(collectable.getImageUri());
-
-
         detailsImage.setImageBitmap(detailsBitmap);
-        //detailsBitmap.recycle();
 
         textItemName.setText(collectable.getName());
         textCountry.setText(collectable.getCountry());
@@ -338,19 +331,6 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         ImageView detailsImage = findViewById(R.id.detailsImage);
 
         switch(requestCode) {
-            /*case TAKE_PHOTO:
-                try {
-                    Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
-                    imageUriString = imageUri.toString();
-                    detailsBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                } catch (IOException e) {
-                    Log.e(TAG, "Unable to read the bitmap of the taken picture");
-                }
-
-                byte[] takenPictureArray = pictureHelper.getByteArrayFromBitmap(detailsBitmap);
-                //Bitmap takenPicture = BitmapFactory.decodeByteArray(takenPictureArray, 0, takenPictureArray.length, options);
-                detailsImage.setImageBitmap(pictureHelper.decodeSampledBitmapFromByteArray(takenPictureArray, imageUriString,150,194));
-                break;*/
 
             case TAKE_PHOTO:
                 Uri imageUri = Uri.parse(pictureHelper.imageFilePath);
@@ -381,9 +361,6 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         } catch (InterruptedException | ExecutionException e) {
             Log.e(TAG, "something went wrong updating the Room object in a separate thread");
         }
-
-
-
     }
 
     public void showAddDialog() {

@@ -46,25 +46,13 @@ public class NewCollectableActivity extends AppCompatActivity {
             imageUriString = intent.getStringExtra("takenPictureFilePath");
             Uri imageUri = Uri.parse(imageUriString);
             String pathName = imageUri.getPath();
-            Bitmap takenPicture = pictureHelper.decodeSampledBitmapFromFile(pathName, imageUriString, 150, 194);
+            pictureHelper.setWidthHeight();
+            Bitmap takenPicture = pictureHelper.decodeSampledBitmapFromFile(pathName, imageUriString, pictureHelper.width, pictureHelper.height);
             newImageView.setImageBitmap(takenPicture);
-
-            //Bitmap takenPicture = pictureHelper.getBitmapFromString(imageUriString);
-            //newImageView.setImageBitmap(takenPicture);
         } else if (intent.hasExtra("chosenPictureUri")) {
             imageUriString = intent.getStringExtra("chosenPictureUri");
-
-
-
-
-
             Uri imageUri = Uri.parse(imageUriString);
-            //String pathName = imageUri.getPath();
-            //String picturePath = pictureHelper.getFilePathStringFromUri(imageUri);
-            //String picturePath = imageUri.getPath();
-
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
-
             Cursor cursor = getContentResolver().query(imageUri
                     , filePathColumn, null, null, null);
             cursor.moveToFirst();
@@ -72,23 +60,9 @@ public class NewCollectableActivity extends AppCompatActivity {
             String picturePath = cursor.getString(columnIndex);
             cursor.close();
             imageUriString = Uri.fromFile(new File(picturePath)).toString();
-
-            Bitmap chosenPicture = pictureHelper.decodeSampledBitmapFromFile(picturePath, imageUriString, 150, 194);
+            pictureHelper.setWidthHeight();
+            Bitmap chosenPicture = pictureHelper.decodeSampledBitmapFromFile(picturePath, imageUriString, pictureHelper.width, pictureHelper.height);
             newImageView.setImageBitmap(chosenPicture);
-
-
-            /*
-            Display display = getWindowManager().getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            int width = size.x;
-            int height = size.y;
-            */
-
-            //newImageView.setImageBitmap(pictureHelper.decodeSampledBitmapFromFile(picturePath, width, height));
-
-            //Bitmap chosenPicture = BitmapFactory.decodeFile(picturePath);
-            //newImageView.setImageBitmap(chosenPicture);
         }
 
         Button done = this.findViewById(R.id.new_done);

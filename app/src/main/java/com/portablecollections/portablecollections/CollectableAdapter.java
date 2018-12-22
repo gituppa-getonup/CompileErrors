@@ -34,6 +34,9 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
 
     private CollectableAdapter(Context context) {
         this.context = context;
+
+        setHasStableIds(true);
+
         sortedList = new SortedList<>(Collectable.class, new SortedListAdapterCallback<Collectable>(this) {
             @Override
             public int compare(Collectable c1, Collectable c2) {
@@ -126,28 +129,13 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Collectable collectable = sortedList.get(position);
-
         String imageUriString = collectable.getImageUri();
         Uri imageUri = Uri.parse(imageUriString);
         String filePathString = imageUri.getPath();
-        //String filePathString = pictureHelper.getFilePathStringFromUri(Uri.parse(imageUriString));
-
-
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        int height = size.y;
-
-        holder.mView.setImageBitmap(pictureHelper.decodeSampledBitmapFromFile(filePathString, imageUriString, width, height));
-
-        //Bitmap bitmap = pictureHelper.getBitmapFromString(imageUriString);
-        //holder.mView.setImageBitmap(bitmap);
-
+        pictureHelper.setWidthHeight();
+        holder.mView.setImageBitmap(pictureHelper.decodeSampledBitmapFromFile(filePathString, imageUriString, pictureHelper.width, pictureHelper.height));
         String nameString = collectable.getName();
         holder.mText.setText(nameString);
-
         holder.mView.setTag(R.id.TAG_COLLECTABLE, collectable);
     }
 
