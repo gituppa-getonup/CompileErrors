@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -27,7 +26,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,7 +36,6 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
     private static final String TAG = CollectableDetails.class.getName();
 
     private Collectable collectable;
-    private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
     private int adapterPosition = -1;
     public final static int TAKE_PHOTO = 1;
     public final static int PICK_IMAGE_GALLERY = 2;
@@ -78,6 +75,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         imageUriString = collectable.getImageUri();
         Uri imageUri = Uri.parse(imageUriString);
         String pathName = imageUri.getPath();
+        CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
         Bitmap detailsBitmap = pictureHelper.decodeSampledBitmapFromFile(pathName, imageUriString, 150, 194);
         detailsImage.setImageBitmap(detailsBitmap);
 
@@ -279,6 +277,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
             public void onClick(View view) {
                 Intent backToMainActivity = new Intent(getApplicationContext(), MainActivity.class);
                 backToMainActivity.putExtra("collectable", collectable);
+                collectable = null;
                 startActivity(backToMainActivity);
             }
         });
@@ -329,6 +328,7 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         }
 
         ImageView detailsImage = findViewById(R.id.detailsImage);
+        CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
 
         switch(requestCode) {
 
@@ -374,7 +374,9 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
     @Override
     public void onDialogTakePhotoClick(DialogFragment dialog) {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        Uri imageUri = pictureHelper.createImageFile(getApplicationContext());
+        CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
+        //Uri imageUri = pictureHelper.createImageFile(getApplicationContext());
+        Uri imageUri = pictureHelper.createImageFile(this);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         cameraIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivityForResult(cameraIntent, TAKE_PHOTO);
@@ -447,6 +449,12 @@ public class CollectableDetails extends AppCompatActivity implements DeleteColle
         public void run() {
             int deletedRecords = getContentResolver().delete(uri, null, null);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        CollectablePictureHelper.getCollectablePictureHelper(this).unbindDrawables(findViewById(R.id.detailsLayout));
     }
 
 }

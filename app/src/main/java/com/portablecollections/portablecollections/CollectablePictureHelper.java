@@ -2,7 +2,6 @@ package com.portablecollections.portablecollections;
 
 
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -10,13 +9,14 @@ import android.graphics.Point;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.Display;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -28,12 +28,11 @@ public class CollectablePictureHelper extends FileProvider {
     private static CollectablePictureHelper collectablePictureHelper;
     private final static String TAG = CollectablePictureHelper.class.getPackage().getName();
     String imageFilePath;
-    Uri imageUri;
     Context context;
     int width;
     int height;
 
-    static CollectablePictureHelper getCollectablePictureHelper(Context context) {
+    public static CollectablePictureHelper getCollectablePictureHelper(Context context) {
         if (collectablePictureHelper == null) {
             collectablePictureHelper = new CollectablePictureHelper(context);
         }
@@ -66,16 +65,15 @@ public class CollectablePictureHelper extends FileProvider {
         }
 
         File imageFile = new File(storageDir, fileName);
-        imageUri = FileProvider.getUriForFile(context,
-                "com.portablecollections.portablecollections.fileprovider",
-                imageFile);
         imageFilePath = "file:" + imageFile.getAbsolutePath();
 
-        return imageUri;
+        return FileProvider.getUriForFile(context,
+                "com.portablecollections.portablecollections.fileprovider",
+                imageFile);
 
     }
 
-    public static Bitmap decodeSampledBitmapFromFile(String pathName, String imageUriString, int reqWidth, int reqHeight) {
+    public Bitmap decodeSampledBitmapFromFile(String pathName, String imageUriString, int reqWidth, int reqHeight) {
 
         Uri imageUri = Uri.parse(imageUriString);
         final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -88,7 +86,7 @@ public class CollectablePictureHelper extends FileProvider {
         return bmp;
     }
 
-    private static int calculateInSampleSize(BitmapFactory.Options options,
+    private int calculateInSampleSize(BitmapFactory.Options options,
                                              int reqWidth, int reqHeight) {
         final int height = options.outHeight;
         final int width = options.outWidth;
@@ -108,7 +106,7 @@ public class CollectablePictureHelper extends FileProvider {
         return inSampleSize;
     }
 
-    private static Bitmap rotateImageIfRequired(Bitmap img, Uri selectedImage) {
+    private Bitmap rotateImageIfRequired(Bitmap img, Uri selectedImage) {
 
         ExifInterface ei = null;
         try {
@@ -131,12 +129,25 @@ public class CollectablePictureHelper extends FileProvider {
         }
     }
 
-    private static Bitmap rotateImage(Bitmap img, int degree) {
+    private Bitmap rotateImage(Bitmap img, int degree) {
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
         Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
         img.recycle();
         return rotatedImg;
+    }
+
+    public void unbindDrawables(View view) {
+        if (view instanceof ImageView) {
+            ImageView imageView = (ImageView) view;
+            imageView.setImageBitmap(null);
+        } else if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                unbindDrawables(viewGroup.getChildAt(i));
+            }
+            System.gc();
+        }
     }
 
 }

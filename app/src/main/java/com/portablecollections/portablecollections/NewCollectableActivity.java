@@ -4,21 +4,17 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Display;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,10 +22,9 @@ import java.util.concurrent.Future;
 
 public class NewCollectableActivity extends AppCompatActivity {
 
-    private EditText newNameText;
     private ContentValues contentValues;
     private static final String TAG = NewCollectableActivity.class.getName();
-    private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
+    //private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
     private Uri returnUri = null;
     private String imageUriString;
 
@@ -46,6 +41,7 @@ public class NewCollectableActivity extends AppCompatActivity {
             imageUriString = intent.getStringExtra("takenPictureFilePath");
             Uri imageUri = Uri.parse(imageUriString);
             String pathName = imageUri.getPath();
+            CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
             pictureHelper.setWidthHeight();
             Bitmap takenPicture = pictureHelper.decodeSampledBitmapFromFile(pathName, imageUriString, pictureHelper.width, pictureHelper.height);
             newImageView.setImageBitmap(takenPicture);
@@ -60,6 +56,7 @@ public class NewCollectableActivity extends AppCompatActivity {
             String picturePath = cursor.getString(columnIndex);
             cursor.close();
             imageUriString = Uri.fromFile(new File(picturePath)).toString();
+            CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
             pictureHelper.setWidthHeight();
             Bitmap chosenPicture = pictureHelper.decodeSampledBitmapFromFile(picturePath, imageUriString, pictureHelper.width, pictureHelper.height);
             newImageView.setImageBitmap(chosenPicture);
@@ -70,7 +67,7 @@ public class NewCollectableActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-                newNameText = findViewById(R.id.new_name);
+                EditText newNameText = findViewById(R.id.new_name);
                 String newName = newNameText.getText().toString();
 
                 contentValues = new ContentValues();
@@ -108,4 +105,12 @@ public class NewCollectableActivity extends AppCompatActivity {
             returnUri = getContentResolver().insert(CollectableProvider.URI_COLLECTABLES, contentValues);
         }
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        CollectablePictureHelper.getCollectablePictureHelper(this).unbindDrawables(findViewById(R.id.newCollectableLayout));
+    }
+
+
 }

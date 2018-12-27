@@ -1,19 +1,16 @@
 package com.portablecollections.portablecollections;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import java.util.List;
 
 
@@ -21,9 +18,8 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
 
     private static final String TAG = CollectableAdapter.class.getName();
     private SortedList<Collectable> sortedList;
-    static CollectableAdapter collectableAdapter;
+    private static CollectableAdapter collectableAdapter;
     private Context context;
-    private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(context);
 
     public static CollectableAdapter getCollectableAdapter(Context context) {
         if (collectableAdapter == null) {
@@ -132,6 +128,7 @@ public class CollectableAdapter extends RecyclerView.Adapter<CollectableAdapter.
         String imageUriString = collectable.getImageUri();
         Uri imageUri = Uri.parse(imageUriString);
         String filePathString = imageUri.getPath();
+        CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(context);
         pictureHelper.setWidthHeight();
         holder.mView.setImageBitmap(pictureHelper.decodeSampledBitmapFromFile(filePathString, imageUriString, pictureHelper.width, pictureHelper.height));
         String nameString = collectable.getName();

@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
     private final static int TAKE_PHOTO = 1;
     private final static int PICK_IMAGE_GALLERY = 2;
     private CollectableAdapter collectableAdapter;
-    private CollectablePictureHelper pictureHelper = CollectablePictureHelper.getCollectablePictureHelper(this);
     private boolean emptyDb = true;
     private RecyclerView recycler;
     private int adapterPosition = -1;
@@ -174,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
 
         Intent intent = new Intent(this, NewCollectableActivity.class);
         if (requestCode == TAKE_PHOTO) {
-            String imageFilePath = pictureHelper.imageFilePath;
+            String imageFilePath = CollectablePictureHelper.getCollectablePictureHelper(this).imageFilePath;
             intent.putExtra("takenPictureFilePath", imageFilePath);
         } else if (requestCode == PICK_IMAGE_GALLERY) {
             Uri imageUri = takePictureIntent.getData();
@@ -331,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
     @Override
     public void onDialogTakePhotoClick(DialogFragment dialog) {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        Uri imageUri = pictureHelper.createImageFile(getApplicationContext());
+        Uri imageUri = CollectablePictureHelper.getCollectablePictureHelper(this).createImageFile(getApplicationContext());
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         cameraIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivityForResult(cameraIntent, TAKE_PHOTO);
@@ -365,6 +364,13 @@ public class MainActivity extends AppCompatActivity implements AddCollectableDia
                 }
                 break;
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        CollectablePictureHelper.getCollectablePictureHelper(this).unbindDrawables(findViewById(R.id.porLayout));
+        recycler.removeView(recycler);
     }
 
 
